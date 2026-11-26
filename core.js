@@ -205,10 +205,10 @@
   /* ══════════════════════════ модель дня ══════════════════════════ */
 
   var MEALS = [
-    { key: 'b', label: 'Завтрак', ico: '🌅' },
-    { key: 'l', label: 'Обед', ico: '🍲' },
-    { key: 'd', label: 'Ужин', ico: '🌙' },
-    { key: 's', label: 'Перекус', ico: '🍎' }
+    { key: 'b', label: 'Завтрак', ico: 'i-sun' },
+    { key: 'l', label: 'Обед', ico: 'i-meal' },
+    { key: 'd', label: 'Ужин', ico: 'i-moon' },
+    { key: 's', label: 'Перекус', ico: 'i-apple' }
   ];
   App.MEALS = MEALS;
 
@@ -230,8 +230,8 @@
   var DEFAULT_STATE = {
     version: 1,
     createdAt: 0,
-    me: { id: '', name: '', emoji: '💛', color: '#ffb35c' },
-    partner: { id: '', name: '', emoji: '💜', color: '#9d7bff' },
+    me: { id: '', name: '', emoji: '', color: '#7CE0B8' },
+    partner: { id: '', name: '', emoji: '', color: '#7CE0B8' },
     room: { code: '', joinedAt: 0, host: false },
     firebase: { dbUrl: '', apiKey: '', uid: '', idToken: '', refreshToken: '', tokenExp: 0 },
     settings: {
@@ -247,8 +247,8 @@
       lastWaterNudge: 0
     },
     meds: [
-      { id: 'm1', name: 'Витамин D', ico: '☀️' },
-      { id: 'm2', name: 'Железо', ico: '🩸' }
+      { id: 'm1', name: 'Витамин D', ico: '' },
+      { id: 'm2', name: 'Железо', ico: '' }
     ],
     days: {},
     pending: {},
@@ -563,7 +563,7 @@
     addMed: function (name, ico) {
       name = String(name || '').trim();
       if (!name) return null;
-      var med = { id: 'm' + U.uid(6), name: name.slice(0, 40), ico: ico || '💊' };
+      var med = { id: 'm' + U.uid(6), name: name.slice(0, 40), ico: ico || '' };
       this.state.meds.push(med);
       this.save();
       this.emit('meds');

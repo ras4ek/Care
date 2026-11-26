@@ -11,7 +11,13 @@
   var Store = App.Store;
   var Sync = App.Sync;
 
-  var MOODS = ['😞', '😕', '🙂', '😊', '🥰'];
+  var MOODS = [
+    { ico: 'i-face-sad', label: 'плохо' },
+    { ico: 'i-face-meh', label: 'так себе' },
+    { ico: 'i-face-neutral', label: 'нормально' },
+    { ico: 'i-face-smile', label: 'хорошо' },
+    { ico: 'i-face-love', label: 'отлично' }
+  ];
   var CIRC = 326.73;
   var currentTab = 'today';
   var toastTimer = null;
@@ -20,6 +26,7 @@
   var UI = (App.UI = {
     tab: 'today',
     sheetOpen: false,
+    lastInvite: '',
 
     /* ══════════════════════════ запуск ══════════════════════════ */
 
@@ -87,6 +94,13 @@
         toast: U.$('#toast'),
         medsList: U.$('#medsList'),
         roomState: U.$('#roomState'),
+        roomOn: U.$('#roomOn'),
+        roomOff: U.$('#roomOff'),
+        roomManual: U.$('#roomManual'),
+        roomLeave: U.$('#roomLeave'),
+        roomHint: U.$('#roomHint'),
+        inviteLink: U.$('#inviteLink'),
+        myAvatar: U.$('#myAvatar'),
         dbStatus: U.$('#dbStatus'),
         storageInfo: U.$('#storageInfo')
       };
@@ -149,7 +163,7 @@
       document.addEventListener('visibilitychange', function () {
         if (!document.hidden) {
           Sync.wake();
-          self.renderAll();
+          self.renderCurrent();
         }
       });
 
@@ -160,20 +174,21 @@
 
     onStore: function (what, payload) {
       if (what === 'day') {
-        this.renderToday();
-        this.renderPair();
+        if (currentTab === 'today') this.renderToday();
         if (payload) Sync.schedulePush(payload);
         return;
       }
       if (what === 'remote-day' || what === 'remote') {
-        this.renderToday();
-        this.renderPair();
-        this.renderHistory();
+        if (currentTab === 'today') this.renderToday();
+        if (currentTab === 'pair') this.renderPair();
+        if (currentTab === 'history') this.renderHistory();
         return;
       }
       if (what === 'live' || what === 'pair-found') {
-        this.renderPair();
+        this.pairDirty = true;
+        if (currentTab === 'pair') this.renderPair();
         this.renderInbox();
+        if (currentTab === 'today') this.renderToday();
         return;
       }
       if (what === 'sync') {
@@ -181,13 +196,13 @@
         return;
       }
       if (what === 'meds') {
-        this.renderToday();
-        this.renderSettings();
+        if (currentTab === 'today') this.renderToday();
+        if (currentTab === 'settings') this.renderSettings();
         return;
       }
       if (what === 'me') {
-        this.renderToday();
-        this.renderPair();
+        if (currentTab === 'today') this.renderToday();
+        if (currentTab === 'pair') this.renderPair();
         return;
       }
       if (what === 'storage-error') {
@@ -208,7 +223,7 @@
       U.$$('#tabs .tab').forEach(function (b) {
         b.classList.toggle('active', b.getAttribute('data-tab') === tab);
       });
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo(0, 0);
       if (tab === 'history') this.renderHistory();
       if (tab === 'pair') this.renderPair();
       if (tab === 'settings') this.renderSettings();
@@ -220,6 +235,14 @@
       this.renderPair();
       this.renderHistory();
       this.renderSettings();
+      this.renderSync();
+    },
+
+    renderCurrent: function () {
+      if (currentTab === 'today') this.renderToday();
+      else if (currentTab === 'pair') this.renderPair();
+      else if (currentTab === 'history') this.renderHistory();
+      else if (currentTab === 'settings') this.renderSettings();
       this.renderSync();
     },
 
@@ -257,7 +280,7 @@
 
       var score = Store.score(doc);
       if (st.soft) {
-        n.dayScore.innerHTML = '🌿';
+        n.dayScore.innerHTML = '<span class="score-ico">' + icon('i-leaf') + '</span>';
         n.dayScoreCap.textContent = 'по ощущениям';
       } else {
         n.dayScore.innerHTML = score + '<span>%</span>';
@@ -272,7 +295,7 @@
       n.waterRing.classList.toggle('full', pct >= 100);
       n.waterMl.innerHTML = total + ' <small>мл</small>';
       n.waterGoal.textContent = 'из ' + U.ml(st.goalWater) + ' · стакан ' + st.glass + ' мл';
-      n.waterPct.textContent = st.soft ? (pct >= 100 ? 'достаточно 🌿' : 'пей понемногу') : pct + '%';
+      n.waterPct.textContent = st.soft ? (pct >= 100 ? 'достаточно' : 'пей понемногу') : pct + '%';
 
       var log = (doc.water || []).slice(-8);
       n.waterLog.innerHTML = log.length
@@ -290,7 +313,7 @@
       n.mealsBox.innerHTML = App.MEALS.map(function (m) {
         return (
           '<button class="chip' + (meals[m.key] ? ' on' : '') + '" data-action="meal-toggle" data-meal="' +
-          m.key + '" type="button"><span class="chip-ico">' + m.ico + '</span>' + m.label + '</button>'
+          m.key + '" type="button"><span class="chip-ico">' + icon(m.ico) + '</span>' + m.label + '</button>'
         );
       }).join('');
       if (document.activeElement !== n.mealNote) n.mealNote.value = doc.mealNote || '';
@@ -323,7 +346,7 @@
             .map(function (m) {
               return (
                 '<button class="chip' + (md[m.id] ? ' on' : '') + '" data-action="med-toggle" data-med="' +
-                U.esc(m.id) + '" type="button"><span class="chip-ico">' + (m.ico || '💊') + '</span>' +
+                U.esc(m.id) + '" type="button"><span class="chip-ico">' + icon('i-pill') + '</span>' +
                 U.esc(m.name) + '</button>'
               );
             })
@@ -332,30 +355,33 @@
 
       /* настроение */
       var feel = doc.feeling || {};
-      n.moodBox.innerHTML = MOODS.map(function (emo, i) {
+      n.moodBox.innerHTML = MOODS.map(function (m, i) {
         var v = i + 1;
         return (
           '<button class="mood' + (feel.mood === v ? ' on' : '') + '" data-action="mood" data-mood="' + v +
-          '" type="button" aria-label="настроение ' + v + '">' + emo + '</button>'
+          '" type="button" aria-label="' + m.label + '">' + icon(m.ico) + '</button>'
         );
       }).join('');
 
       var flags = [];
       flags.push(
-        '<button class="flag' + (feel.nose ? ' on' : '') + '" data-action="nose-add" type="button">🩸 кровь из носа' +
+        '<button class="flag' + (feel.nose ? ' on' : '') + '" data-action="nose-add" type="button">' +
+        icon('i-water') + ' кровь из носа' +
         (feel.nose ? ' <span class="cnt">' + feel.nose + '</span>' : '') + '</button>'
       );
-      if (feel.nose) flags.push('<button class="flag" data-action="nose-reset" type="button">↺ сброс</button>');
+      if (feel.nose) flags.push('<button class="flag" data-action="nose-reset" type="button">' + icon('i-refresh') + ' сброс</button>');
       flags.push(
-        '<button class="flag' + (feel.dizzy ? ' on' : '') + '" data-action="flag" data-flag="dizzy" type="button">😵‍💫 кружится голова</button>'
+        '<button class="flag' + (feel.dizzy ? ' on' : '') + '" data-action="flag" data-flag="dizzy" type="button">' +
+        icon('i-refresh') + ' кружится голова</button>'
       );
       flags.push(
-        '<button class="flag' + (feel.weak ? ' on' : '') + '" data-action="flag" data-flag="weak" type="button">🪫 слабость</button>'
+        '<button class="flag' + (feel.weak ? ' on' : '') + '" data-action="flag" data-flag="weak" type="button">' +
+        icon('i-battery') + ' слабость</button>'
       );
       n.flagsBox.innerHTML = flags.join('');
 
       if (document.activeElement !== n.feelingNote) n.feelingNote.value = feel.note || '';
-      n.feelingMeta.textContent = feel.mood ? ['', 'плохо', 'так себе', 'нормально', 'хорошо', 'отлично'][feel.mood] : '';
+      n.feelingMeta.textContent = feel.mood ? MOODS[feel.mood - 1].label : '';
 
       /* серия */
       var streak = Store.streak();
@@ -384,7 +410,7 @@
         items.push({ kind: 'nudge', ts: live.nudge.ts, text: live.nudge.text });
       }
       if (live.heart && live.heart > (seen.heart || 0)) {
-        items.push({ kind: 'heart', ts: live.heart, text: '💛 сердечко' });
+        items.push({ kind: 'heart', ts: live.heart, text: 'сердечко' });
       }
       if (!items.length) {
         n.inboxBanner.classList.add('hidden');
@@ -393,10 +419,11 @@
       items.sort(function (a, b) { return b.ts - a.ts; });
       var it = items[0];
       n.inboxBanner.innerHTML =
-        '<span class="banner-ico">💌</span>' +
+        '<span class="banner-ico">' + icon('i-inbox') + '</span>' +
         '<div class="msg"><b>' + U.esc(p.name || 'Она') + ' · ' + U.timeAgo(it.ts) + '</b>' +
         '<i>«' + U.esc(it.text) + '»</i></div>' +
-        '<button class="banner-x" data-action="dismiss-inbox" type="button" aria-label="Скрыть">×</button>';
+        '<button class="banner-x" data-action="dismiss-inbox" type="button" aria-label="Скрыть">' +
+        icon('i-x') + '</button>';
       n.inboxBanner.classList.remove('hidden');
     },
 
@@ -427,7 +454,7 @@
       var online = live.ts && Date.now() - live.ts < 150000;
 
       n.pairSub.textContent = has ? 'вы вдвоём' : 'ваша пара';
-      n.partnerAvatar.textContent = p.emoji || '💜';
+      paintAvatar(n.partnerAvatar, p.name, p.color);
       n.partnerName.textContent = p.name || 'Партнёр';
       n.partnerSeen.textContent = has
         ? online
@@ -444,34 +471,34 @@
       var st = Store.state.settings;
 
       var rows = [
-        { cls: 'w', ico: '💧', label: 'Вода', val: U.ml(Store.waterTotal(doc)), pct: U.clamp(Store.waterTotal(doc) / (st.goalWater || 2000) * 100, 0, 100) },
-        { cls: 'f', ico: '🍽', label: 'Еда', val: Store.mealsCount(doc) + ' из ' + st.goalMeals, pct: U.clamp(Store.mealsCount(doc) / (st.goalMeals || 3) * 100, 0, 100) },
-        { cls: 'a', ico: '🚶', label: 'Активность', val: U.hm(Store.activityTotal(doc)), pct: U.clamp(Store.activityTotal(doc) / (st.goalActivity || 120) * 100, 0, 100) },
-        { cls: 's', ico: '😴', label: 'Сон', val: Store.sleepHours(doc) ? U.hours(Store.sleepHours(doc)) : '—', pct: U.clamp(Store.sleepHours(doc) / (st.goalSleep || 8) * 100, 0, 100) }
+        { cls: 'w', ico: 'i-water', label: 'Вода', val: U.ml(Store.waterTotal(doc)), pct: U.clamp(Store.waterTotal(doc) / (st.goalWater || 2000) * 100, 0, 100) },
+        { cls: 'f', ico: 'i-meal', label: 'Еда', val: Store.mealsCount(doc) + ' из ' + st.goalMeals, pct: U.clamp(Store.mealsCount(doc) / (st.goalMeals || 3) * 100, 0, 100) },
+        { cls: 'a', ico: 'i-move', label: 'Активность', val: U.hm(Store.activityTotal(doc)), pct: U.clamp(Store.activityTotal(doc) / (st.goalActivity || 120) * 100, 0, 100) },
+        { cls: 's', ico: 'i-moon', label: 'Сон', val: Store.sleepHours(doc) ? U.hours(Store.sleepHours(doc)) : '—', pct: U.clamp(Store.sleepHours(doc) / (st.goalSleep || 8) * 100, 0, 100) }
       ];
 
       var feel = doc.feeling || {};
       if (feel.mood || feel.nose || feel.dizzy || feel.weak || feel.note) {
         var bits = [];
-        if (feel.mood) bits.push(MOODS[feel.mood - 1] || '');
-        if (feel.nose) bits.push('🩸 ' + feel.nose);
-        if (feel.dizzy) bits.push('😵‍💫');
-        if (feel.weak) bits.push('🪫');
+        if (feel.mood) bits.push(MOODS[feel.mood - 1].label);
+        if (feel.nose) bits.push('кровь из носа: ' + feel.nose);
+        if (feel.dizzy) bits.push('голова кружится');
+        if (feel.weak) bits.push('слабость');
         rows.push({
           cls: 'f',
-          ico: '🫶',
+          ico: 'i-heart',
           label: 'Самочувствие',
-          val: bits.join(' ') || '—',
+          val: bits.join(' · ') || '—',
           pct: feel.mood ? feel.mood * 20 : 0
         });
-        if (feel.note) rows.push({ cls: 's', ico: '💬', label: 'Заметка', val: U.esc(feel.note), pct: 0 });
+        if (feel.note) rows.push({ cls: 's', ico: 'i-edit', label: 'Заметка', val: U.esc(feel.note), pct: 0 });
       }
 
       n.partnerGrid.innerHTML = rows
         .map(function (r) {
           return (
             '<div class="prow">' +
-            '<div class="prow-top"><span class="lbl">' + r.ico + ' ' + r.label + '</span>' +
+            '<div class="prow-top"><span class="lbl ic-' + r.cls + '">' + icon(r.ico) + ' ' + r.label + '</span>' +
             '<span class="val">' + r.val + '</span></div>' +
             '<div class="pbar ' + r.cls + '"><i style="width:' + r.pct + '%"></i></div>' +
             '</div>'
@@ -481,16 +508,16 @@
 
       /* входящие */
       var items = [];
-      if (live.note) items.push({ ico: '✉️', text: live.note.text, ts: live.note.ts });
-      if (live.nudge) items.push({ ico: '🔔', text: live.nudge.text, ts: live.nudge.ts });
-      if (live.heart) items.push({ ico: '💛', text: 'сердечко', ts: live.heart });
+      if (live.note) items.push({ ico: 'i-edit', text: live.note.text, ts: live.note.ts });
+      if (live.nudge) items.push({ ico: 'i-bell', text: live.nudge.text, ts: live.nudge.ts });
+      if (live.heart) items.push({ ico: 'i-heart', text: 'сердечко', ts: live.heart });
       items.sort(function (a, b) { return b.ts - a.ts; });
       n.incoming.innerHTML = items.length
         ? items
             .slice(0, 6)
             .map(function (it) {
               return (
-                '<div class="inc-item"><span>' + it.ico + '</span><span>' + U.esc(it.text) +
+                '<div class="inc-item">' + icon(it.ico) + '<span>' + U.esc(it.text) +
                 '</span><span class="when">' + U.timeAgo(it.ts) + '</span></div>'
               );
             })
@@ -499,17 +526,17 @@
 
       /* быстрые фразы */
       var phrases = [
-        { t: 'Попей водички 💧', i: '💧' },
-        { t: 'Поешь, пожалуйста 🍲', i: '🍲' },
-        { t: 'Как ты? 🫶', i: '🫶' },
-        { t: 'Отдохни немного 🌙', i: '🌙' },
-        { t: 'Ты умница 💛', i: '💛' }
+        { t: 'Попей водички', i: 'i-water' },
+        { t: 'Поешь, пожалуйста', i: 'i-meal' },
+        { t: 'Как ты?', i: 'i-heart' },
+        { t: 'Отдохни немного', i: 'i-moon' },
+        { t: 'Ты умница', i: 'i-spark' }
       ];
       n.sendQuick.innerHTML = phrases
         .map(function (ph) {
           return (
             '<button class="qbtn" data-action="send-nudge" data-text="' + U.esc(ph.t) + '" type="button">' +
-            ph.i + ' ' + U.esc(ph.t.replace(/ \S+$/, '')) + '</button>'
+            icon(ph.i) + ' ' + U.esc(ph.t) + '</button>'
           );
         })
         .join('');
@@ -576,7 +603,7 @@
           '<button class="cal-day ' + lvl + (key === U.todayKey() ? ' today' : '') +
           '" data-action="day-open" data-date="' + key + '" type="button">' +
           '<span>' + U.pad2(U.parseKey(key).getDate()) + '</span>' +
-          (d.nose ? '<span class="nose">🩸</span>' : '') +
+          (d.nose ? '<span class="nose"></span>' : '') +
           '</button>';
       }
       n.histGrid.innerHTML = html;
@@ -595,7 +622,7 @@
 
       n.noseHint.textContent = noseTotal
         ? 'За 30 дней: ' + noseTotal + ' раз(а). Больше воды и мягче режим — и станет легче. Это не приговор, это повод беречься.'
-        : 'За 30 дней ни одного случая. Отличный знак 💛';
+        : 'За 30 дней ни одного случая. Отличный знак.';
 
       this.renderStorageInfo();
     },
@@ -621,9 +648,9 @@
       var st = Store.state.settings;
 
       setVal('#setName', me.name === 'Я' ? '' : me.name);
-      setVal('#setEmoji', me.emoji || '💛');
-      setVal('#setColor', me.color || '#ffb35c');
+      setVal('#setColor', me.color || '#7CE0B8');
       setVal('#setWeight', st.weight || '');
+      paintAvatar(n.myAvatar, me.name, me.color);
 
       setVal('#goalsWater', st.goalWater);
       setVal('#goalsGlass', st.glass);
@@ -642,15 +669,7 @@
       setVal('#setKey', Store.state.firebase.apiKey || '');
       setVal('#setRoom', Store.state.room.code || '');
 
-      if (n.roomState) {
-        var code = Store.state.room.code;
-        var p = Store.partner();
-        n.roomState.textContent = code
-          ? p.id
-            ? 'код ' + code + ' · вдвоём'
-            : 'код ' + code + ' · ждём партнёра'
-          : 'не создана';
-      }
+      this.renderRoom();
 
       if (n.dbStatus) {
         if (!App.Net.configured()) n.dbStatus.textContent = 'не подключено';
@@ -664,9 +683,10 @@
           ? Store.state.meds
               .map(function (m) {
                 return (
-                  '<div class="med-row"><span class="med-ico">' + (m.ico || '💊') + '</span>' +
+                  '<div class="med-row"><span class="med-ico">' + icon('i-pill') + '</span>' +
                   '<span class="med-name">' + U.esc(m.name) + '</span>' +
-                  '<button class="med-del" data-action="del-med" data-med="' + U.esc(m.id) + '" type="button">×</button></div>'
+                  '<button class="med-del" data-action="del-med" data-med="' + U.esc(m.id) + '" type="button" aria-label="Удалить">' +
+                  icon('i-x') + '</button></div>'
                 );
               })
               .join('')
@@ -675,6 +695,40 @@
 
       settingsFilled = true;
       this.renderStorageInfo();
+    },
+
+    /* ── пара / комната ── */
+
+    inviteUrl: function () {
+      var code = Store.state.room.code;
+      if (!code) return '';
+      return location.origin + location.pathname + '#r=' + code;
+    },
+
+    renderRoom: function () {
+      var n = this.n;
+      if (!n.roomOn) return;
+      var code = Store.state.room.code;
+      var p = Store.partner();
+      var joined = !!code;
+
+      n.roomOn.classList.toggle('hidden', !joined);
+      n.roomOff.classList.toggle('hidden', joined);
+      if (n.roomLeave) n.roomLeave.classList.toggle('hidden', !joined);
+
+      if (n.roomState) {
+        n.roomState.textContent = joined ? (p.id ? 'вдвоём' : 'ждём партнёра') : 'не подключена';
+      }
+
+      if (joined && n.inviteLink) {
+        n.inviteLink.textContent = this.inviteUrl();
+      }
+
+      if (joined && n.roomHint) {
+        n.roomHint.textContent = p.id
+          ? 'Партнёр на связи. Данные обновляются сами.'
+          : 'Отправьте ссылку партнёру — он откроет её, и пара появится автоматически.';
+      }
     },
 
     /* ══════════════════════════ действия ══════════════════════════ */
@@ -810,15 +864,31 @@
           this.toast('Обновляю…');
           break;
 
+        case 'invite':
+          this.invite();
+          break;
+
+        case 'invite-share':
+          this.shareInvite();
+          break;
+
+        case 'copy-invite':
+          this.copyInvite();
+          break;
+
+        case 'room-manual':
+          if (this.n.roomManual) this.n.roomManual.classList.toggle('hidden');
+          break;
+
         case 'send-heart':
-          if (!Store.hasPartner()) return this.toast('Сначала создайте комнату');
+          if (!Store.hasPartner()) return this.toast('Сначала пригласите партнёра');
           Sync.sendHeart();
-          this.toast('💛 улетело');
+          this.toast('Сердечко улетело');
           vibrate(16);
           break;
 
         case 'send-nudge':
-          if (!Store.hasPartner()) return this.toast('Сначала создайте комнату');
+          if (!Store.hasPartner()) return this.toast('Сначала пригласите партнёра');
           Sync.sendNudge(g('data-text'));
           this.toast('Отправлено');
           break;
@@ -837,7 +907,7 @@
 
         case 'welcome-room':
           this.saveWelcome();
-          this.go('settings');
+          this.invite();
           break;
 
         default:
@@ -862,16 +932,13 @@
 
         case 'setName':
           Store.setMe({ name: el.value.trim().slice(0, 24) || 'Я' });
-          Sync.pushMember();
-          Sync.pushLive();
-          break;
-        case 'setEmoji':
-          Store.setMe({ emoji: el.value.trim().slice(0, 4) || '💛' });
+          paintAvatar(this.n.myAvatar, el.value.trim(), Store.me().color);
           Sync.pushMember();
           Sync.pushLive();
           break;
         case 'setColor':
           Store.setMe({ color: el.value });
+          paintAvatar(this.n.myAvatar, Store.me().name, el.value);
           Sync.pushMember();
           Sync.pushLive();
           break;
@@ -921,7 +988,7 @@
           st.soft = el.checked;
           Store.save();
           this.renderToday();
-          this.toast(el.checked ? 'Мягкий режим включён 🌿' : 'Мягкий режим выключен');
+          this.toast(el.checked ? 'Мягкий режим включён' : 'Мягкий режим выключен');
           break;
 
         case 'setDb':
@@ -988,55 +1055,112 @@
       this.toast('Цель по воде: ' + U.ml(ml));
     },
 
-    /* ── комната ── */
+    /* ── пара ── */
 
-    createRoom: function () {
-      var code = U.roomCode(8);
-      Store.state.room.code = code;
-      Store.state.room.joinedAt = Date.now();
-      Store.state.room.host = true;
-      Store.save();
-      this.renderSettings();
-      this.toast('Комната ' + code + ' создана');
+    ensureRoom: function () {
+      var code = Store.state.room.code;
+      if (!code) {
+        code = U.roomCode(8);
+        Store.state.room.code = code;
+        Store.state.room.joinedAt = Date.now();
+        Store.state.room.host = true;
+        Store.save();
+      }
+      this.renderRoom();
       Sync.start();
-      if (U.copy(code)) this.toast('Код ' + code + ' скопирован');
+      return code;
     },
 
-    joinRoom: function () {
-      var code = String(U.$('#setRoom').value || '')
+    invite: function () {
+      var self = this;
+      var code = this.ensureRoom();
+      var url = this.inviteUrl();
+      this.lastInvite = url;
+
+      this.sheet(
+        'Пригласить партнёра',
+        '<p>Отправьте ссылку — партнёру достаточно открыть её. Код вводить не нужно.</p>' +
+        '<div class="invite-box top-gap"><div class="invite-label">Ссылка-приглашение</div>' +
+        '<div class="invite-link">' + U.esc(url) + '</div></div>' +
+        '<div class="row-inline top-gap">' +
+        '<button class="btn primary grow" data-action="invite-share" type="button">' + icon('i-share') + ' Поделиться</button>' +
+        '<button class="btn" data-action="copy-invite" type="button">' + icon('i-copy') + '</button>' +
+        '</div>' +
+        '<p class="hint">Код пары: <b>' + U.esc(code) + '</b>. Он понадобится, только если ссылку открыть не получится.</p>'
+      );
+
+      if (navigator.share) {
+        navigator.share({
+          title: 'Вместе',
+          text: 'Давай вести дни вместе — вода, еда, сон и самочувствие.',
+          url: url
+        }).catch(function () {});
+      }
+    },
+
+    shareInvite: function () {
+      var url = this.inviteUrl() || this.lastInvite;
+      if (!url) return this.toast('Сначала создайте пару');
+      if (navigator.share) {
+        navigator.share({ title: 'Вместе', text: 'Давай вести дни вместе.', url: url }).catch(function () {});
+        return;
+      }
+      this.toast(U.copy(url) ? 'Ссылка скопирована' : 'Не удалось скопировать');
+    },
+
+    copyInvite: function () {
+      var url = this.inviteUrl() || this.lastInvite;
+      if (!url) return this.toast('Сначала создайте пару');
+      this.toast(U.copy(url) ? 'Ссылка скопирована' : 'Не удалось скопировать');
+    },
+
+    createRoom: function () {
+      var code = this.ensureRoom();
+      this.toast('Пара создана · код ' + code);
+      this.shareInvite();
+    },
+
+    joinByCode: function (raw, silent) {
+      var code = String(raw || '')
         .trim()
         .toUpperCase()
         .replace(/[^A-Z0-9]/g, '');
-      if (code.length < 4) return this.toast('Код слишком короткий');
+      if (code.length < 4) {
+        if (!silent) this.toast('Код слишком короткий');
+        return false;
+      }
+      if (Store.state.room.code === code) {
+        Sync.start();
+        return true;
+      }
       Store.state.room.code = code;
       Store.state.room.joinedAt = Date.now();
       Store.state.room.host = false;
+      Store.state.partnerLive = null;
+      Store.setPartner({ id: '', name: '', emoji: '', color: '#7CE0B8' });
       Store.save();
-      this.renderSettings();
-      this.renderPair();
-      this.toast('Вхожу в комнату ' + code);
-      if (!App.Net.configured()) {
-        this.toast('Код сохранён. Без Firebase обмен не пойдёт — см. ЧИТАЙ.md');
-      }
-      Sync.start().then(function () {
-        if (Store.hasPartner()) App.UI.toast('Партнёр найден 💞');
-      });
+      this.renderAll();
+      Sync.start();
+      if (!silent) this.toast('Пара подключена');
+      return true;
+    },
+
+    joinRoom: function () {
+      return this.joinByCode(U.$('#setRoom').value, false);
     },
 
     leaveRoom: function () {
       Store.state.room.code = '';
       Store.state.partnerLive = null;
-      Store.setPartner({ id: '', name: '', emoji: '💜', color: '#9d7bff' });
+      Store.setPartner({ id: '', name: '', emoji: '', color: '#7CE0B8' });
       Store.save();
       Sync.stop();
       this.renderAll();
-      this.toast('Вышли из комнаты');
+      this.toast('Пара отключена');
     },
 
     copyRoom: function () {
-      var code = Store.state.room.code;
-      if (!code) return this.toast('Сначала создайте комнату');
-      this.toast(U.copy(code) ? 'Код ' + code + ' скопирован' : 'Не удалось скопировать');
+      this.copyInvite();
     },
 
     connectDb: function () {
@@ -1088,13 +1212,12 @@
       if (!Store.hasPartner()) return this.toast('Сначала создайте комнату');
       Sync.sendNote(text);
       input.value = '';
-      this.toast('Отправлено 💌');
+      this.toast('Отправлено');
     },
 
     saveWelcome: function () {
       var name = String(U.$('#welcomeName').value || '').trim();
-      var emoji = String(U.$('#welcomeEmoji').value || '').trim() || '💛';
-      Store.setMe({ name: name || 'Я', emoji: emoji.slice(0, 4) });
+      Store.setMe({ name: name || 'Я', emoji: '' });
       try {
         localStorage.setItem('vmeste.onboarded', '1');
       } catch (e) { /* ignore */ }
@@ -1151,14 +1274,14 @@
       var st = Store.state.settings;
       var feel = doc.feeling || {};
       var rows = [
-        ['💧 Вода', U.ml(Store.waterTotal(doc)) + ' (' + Store.waterPct(doc) + '% от цели)'],
-        ['🍽 Еда', Store.mealsCount(doc) + ' из ' + st.goalMeals + (doc.mealNote ? ' · ' + U.esc(doc.mealNote) : '')],
-        ['😴 Сон', Store.sleepHours(doc) ? U.hours(Store.sleepHours(doc)) : '—'],
-        ['🚶 Активность', U.hm(Store.activityTotal(doc))],
-        ['💊 Лекарства', Store.medsDone(doc) + ' из ' + Store.state.meds.length],
-        ['🫶 Настроение', feel.mood ? MOODS[feel.mood - 1] : '—'],
-        ['🩸 Кровь из носа', feel.nose || 'нет'],
-        ['📊 Балл дня', Store.isTouched(doc) ? Store.score(doc) + '%' : 'нет данных']
+        ['Вода', U.ml(Store.waterTotal(doc)) + ' · ' + Store.waterPct(doc) + '% от цели'],
+        ['Еда', Store.mealsCount(doc) + ' из ' + st.goalMeals + (doc.mealNote ? ' · ' + U.esc(doc.mealNote) : '')],
+        ['Сон', Store.sleepHours(doc) ? U.hours(Store.sleepHours(doc)) : '—'],
+        ['Активность', U.hm(Store.activityTotal(doc))],
+        ['Лекарства', Store.medsDone(doc) + ' из ' + Store.state.meds.length],
+        ['Настроение', feel.mood ? MOODS[feel.mood - 1].label : '—'],
+        ['Кровь из носа', feel.nose || 'нет'],
+        ['Балл дня', Store.isTouched(doc) ? Store.score(doc) + '%' : 'нет данных']
       ];
       this.sheet(
         U.DATE_HUMAN(key),
@@ -1174,9 +1297,8 @@
 
     showSyncSheet: function () {
       var lines = [];
-      lines.push(['Комната', Store.state.room.code || '—']);
-      lines.push(['Firebase', App.Net.configured() ? 'настроен' : 'нет']);
-      lines.push(['Партнёр', Store.hasPartner() ? Store.partner().name + ' ' + (Store.partner().emoji || '') : 'не найден']);
+      lines.push(['Пара', Store.state.room.code ? (Store.hasPartner() ? 'на связи' : 'ждём партнёра') : 'не подключена']);
+      lines.push(['Партнёр', Store.hasPartner() ? Store.partner().name : 'не найден']);
       lines.push(['Состояние', Sync.label()]);
       lines.push(['В очереди', String(Store.pendingCount())]);
       if (Sync.error) lines.push(['Ошибка', Sync.error]);
@@ -1195,17 +1317,25 @@
 
     welcome: function () {
       this.sheet(
-        'Привет 💞',
+        'Привет',
         '<p>«Вместе» — тихий трекер заботы. Вода, еда, сон, движение и самочувствие. Для двоих, по-настоящему вместе.</p>' +
-        '<label class="field"><span>как тебя звать</span>' +
-        '<input type="text" id="welcomeName" maxlength="24" placeholder="имя или прозвище"></label>' +
-        '<label class="field top-gap"><span>эмодзи-аватар</span>' +
-        '<input type="text" id="welcomeEmoji" maxlength="4" placeholder="💛" value="💛"></label>' +
+        '<label class="field top-gap"><span>как тебя звать</span>' +
+        '<input type="text" id="welcomeName" maxlength="24" placeholder="Имя или прозвище"></label>' +
         '<div class="row-inline top-gap">' +
-        '<button class="btn primary" data-action="welcome-save" type="button">Начать</button>' +
-        '<button class="btn" data-action="welcome-room" type="button">Сразу к комнате</button>' +
+        '<button class="btn primary grow" data-action="welcome-save" type="button">Начать</button>' +
+        '<button class="btn" data-action="welcome-room" type="button">Пригласить</button>' +
         '</div>' +
-        '<p class="hint">Всё хранится на телефоне. Синхронизация появится, когда вы с партнёром введёте один код комнаты.</p>'
+        '<p class="hint">Всё хранится на телефоне. Пара появится, когда партнёр откроет вашу ссылку-приглашение.</p>'
+      );
+    },
+
+    namePrompt: function () {
+      this.sheet(
+        'Как тебя звать?',
+        '<p>Пара уже подключена. Осталось имя — его увидит партнёр.</p>' +
+        '<label class="field top-gap"><span>имя</span>' +
+        '<input type="text" id="welcomeName" maxlength="24" placeholder="Имя или прозвище"></label>' +
+        '<button class="btn primary wide top-gap" data-action="welcome-save" type="button">Готово</button>'
       );
     },
 
@@ -1230,6 +1360,46 @@
   });
 
   /* ══════════════════════════ мелкие помощники ══════════════════════════ */
+
+  function icon(name) {
+    return '<svg class="ic" aria-hidden="true"><use href="#' + name + '"></use></svg>';
+  }
+
+  function initials(name) {
+    var s = String(name || '').trim();
+    if (!s || s === 'Я') return 'Я';
+    var parts = s.split(/\s+/).filter(Boolean);
+    if (parts.length > 1) return (parts[0][0] + parts[1][0]).toUpperCase();
+    return s.slice(0, 1).toUpperCase();
+  }
+
+  function mix(hex, amt) {
+    var m = /^#?([0-9a-f]{6})$/i.exec(String(hex || ''));
+    if (!m) return hex;
+    var n = parseInt(m[1], 16);
+    var r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+    r = Math.round(r + (255 - r) * amt);
+    g = Math.round(g + (255 - g) * amt);
+    b = Math.round(b + (255 - b) * amt);
+    return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+  }
+
+  function inkOn(hex) {
+    var m = /^#?([0-9a-f]{6})$/i.exec(String(hex || ''));
+    if (!m) return '#07110D';
+    var n = parseInt(m[1], 16);
+    var l = 0.299 * ((n >> 16) & 255) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255);
+    return l > 134 ? '#07110D' : '#F7FBFF';
+  }
+
+  function paintAvatar(el, name, color) {
+    if (!el) return;
+    var txt = initials(name);
+    if (el.textContent !== txt) el.textContent = txt;
+    var c = /^#[0-9a-f]{6}$/i.test(String(color || '')) ? color : '#7CE0B8';
+    el.style.background = 'linear-gradient(160deg, ' + mix(c, 0.38) + ', ' + c + ')';
+    el.style.color = inkOn(c);
+  }
 
   function dateOfScreen() {
     return U.todayKey();

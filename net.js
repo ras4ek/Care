@@ -393,7 +393,7 @@
       var me = Store.me();
       var payload = {
         name: me.name || 'Я',
-        emoji: me.emoji || '💛',
+        emoji: me.emoji || '',
         color: me.color || '#ffb35c',
         ts: Date.now(),
         app: 'vmeste/1'
@@ -407,7 +407,7 @@
       var me = Store.me();
       var live = {
         name: me.name || 'Я',
-        emoji: me.emoji || '💛',
+        emoji: me.emoji || '',
         color: me.color || '#ffb35c',
         ts: Date.now()
       };
@@ -439,7 +439,7 @@
           Store.setPartner({
             id: other,
             name: info.name || 'Партнёр',
-            emoji: info.emoji || '💜',
+            emoji: info.emoji || '',
             color: info.color || '#9d7bff'
           });
           Store.emit('pair-found');
@@ -594,7 +594,7 @@
       if (!live) return;
 
       if (!partnerId) {
-        Store.setPartner({ id: uid, name: live.name || 'Партнёр', emoji: live.emoji || '💜', color: live.color || '#9d7bff' });
+        Store.setPartner({ id: uid, name: live.name || 'Партнёр', emoji: live.emoji || '', color: live.color || '#9d7bff' });
       }
 
       var p = Store.partner();

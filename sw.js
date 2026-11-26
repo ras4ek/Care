@@ -1,9 +1,11 @@
 /* ────────────────────────────────────────────────────────────────
    sw.js — офлайн-оболочка (работает на https, например GitHub Pages)
-   Firebase-запросы не кэшируем: они всегда идут в сеть.
+   Стратегия: сначала сеть, кэш — только если сети нет.
+   Так обновления приложения видны сразу, без «залипших» старых версий.
+   Запросы к Firebase не перехватываются.
    ──────────────────────────────────────────────────────────────── */
 
-var CACHE = 'vmeste-v2';
+var CACHE = 'vmeste-v3';
 var SHELL = [
   './',
   './index.html',
@@ -67,22 +69,20 @@ self.addEventListener('fetch', function (ev) {
   if (url.origin !== location.origin) return;
 
   ev.respondWith(
-    caches.match(req, { ignoreSearch: true }).then(function (hit) {
-      var net = fetch(req)
-        .then(function (res) {
-          if (res && res.status === 200) {
-            var copy = res.clone();
-            caches.open(CACHE).then(function (c) {
-              c.put(req, copy).catch(function () {});
-            });
-          }
-          return res;
-        })
-        .catch(function () {
+    fetch(req)
+      .then(function (res) {
+        if (res && res.status === 200 && res.type === 'basic') {
+          var copy = res.clone();
+          caches.open(CACHE).then(function (c) {
+            c.put(req, copy).catch(function () {});
+          });
+        }
+        return res;
+      })
+      .catch(function () {
+        return caches.match(req, { ignoreSearch: true }).then(function (hit) {
           return hit || caches.match('./index.html');
         });
-
-      return hit || net;
-    })
+      })
   );
 });

@@ -46,7 +46,7 @@
       if (last && now - last < every) return;
 
       this.fire(
-        'Пора попить воды 💧',
+        'Пора попить воды',
         pct === 0 ? 'Ещё ни капли за сегодня. Начни с половины стакана.' : 'Выпито ' + pct + '% от цели. Один стакан — и станет легче.'
       );
       this.lastAt = now;
@@ -80,7 +80,7 @@
       boot.classList.remove('gone');
       boot.style.display = 'flex';
       boot.innerHTML =
-        '<div class="boot-heart">💔</div>' +
+        '<div class="boot-mark"><svg class="ic"><use href="#i-alert"/></svg></div>' +
         '<div class="boot-text" style="max-width:82%;text-align:center;line-height:1.5">' +
         'Не удалось запустить «Вместе».<br><small style="opacity:.7">' +
         U.esc(String(message || 'неизвестная ошибка').slice(0, 200)) +
@@ -95,6 +95,11 @@
   });
 
   /* ══════════════════════════ запуск ══════════════════════════ */
+
+  function inviteFromHash() {
+    var m = /(?:^|[#&?])r=([A-Za-z0-9]{4,12})/.exec(location.hash || '');
+    return m ? m[1].toUpperCase() : '';
+  }
 
   function boot() {
     try {
@@ -114,13 +119,27 @@
       }
     }
 
-    if (App.UI) App.UI.init();
-
-    /* первый запуск */
     var onboarded = false;
     try {
       onboarded = localStorage.getItem('vmeste.onboarded') === '1';
     } catch (e) { /* ignore */ }
+
+    if (App.UI) App.UI.init();
+
+    /* ссылка-приглашение: #r=CODE — пара подключается сама */
+    var invited = inviteFromHash();
+    if (invited && App.UI) {
+      App.UI.joinByCode(invited, true);
+      try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { /* ignore */ }
+      onboarded = true;
+      if (!Store.me().name || Store.me().name === 'Я') {
+        setTimeout(function () { App.UI.namePrompt(); }, 320);
+      } else {
+        App.UI.toast('Пара подключена');
+      }
+    }
+
+    /* первый запуск */
     if (!onboarded && App.UI) {
       setTimeout(function () {
         App.UI.welcome();
@@ -152,10 +171,7 @@
 
     /* вкладка вернулась — догоняем */
     document.addEventListener('visibilitychange', function () {
-      if (!document.hidden) {
-        App.UI.renderAll();
-        Sync.wake();
-      }
+      if (!document.hidden) Sync.wake();
     });
 
     /* смена суток */
