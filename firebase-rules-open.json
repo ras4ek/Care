@@ -1,0 +1,12 @@
+{
+  "rules": {
+    "vmeste": {
+      "rooms": {
+        "$room": {
+          ".read": true,
+          ".write": true
+        }
+      }
+    }
+  }
+}

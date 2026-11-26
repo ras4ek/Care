@@ -1,0 +1,456 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#140b14">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="format-detection" content="telephone=no">
+<meta name="description" content="Вместе — трекер заботы вдвоём: вода, еда, сон, активность и самочувствие в одной комнате.">
+<title>Вместе</title>
+<link rel="stylesheet" href="styles.css">
+<link rel="manifest" href="manifest.webmanifest">
+</head>
+<body>
+
+<!-- ─────────────────────────── загрузка ─────────────────────────── -->
+<div id="boot">
+  <div class="boot-heart">💞</div>
+  <div class="boot-text">Загружаю «Вместе»…</div>
+</div>
+
+<!-- ─────────────────────────── верхняя панель ─────────────────────────── -->
+<header id="topbar">
+  <div class="brand">
+    <span class="brand-mark">💞</span>
+    <div class="brand-text">
+      <b>Вместе</b>
+      <small id="brandSub">забота вдвоём</small>
+    </div>
+  </div>
+  <button class="sync-pill" id="syncPill" data-action="sync-info" type="button">
+    <span class="sync-dot" id="syncDot"></span>
+    <span id="syncLabel">локально</span>
+  </button>
+</header>
+
+<!-- ─────────────────────────── экраны ─────────────────────────── -->
+<main id="screens">
+
+  <!-- ═══════════════ СЕГОДНЯ ═══════════════ -->
+  <section class="screen active" data-screen="today">
+
+    <div class="daybar">
+      <div>
+        <h1 id="greet">Привет</h1>
+        <p class="muted" id="todayLabel">сегодня</p>
+      </div>
+      <div class="daybar-score">
+        <div class="score-num" id="dayScore">0<span>%</span></div>
+        <div class="score-cap" id="dayScoreCap">день</div>
+      </div>
+    </div>
+
+    <div class="banner soft hidden" id="softBanner">
+      <span class="banner-ico">🌿</span>
+      <div>
+        <b>Мягкий режим включён</b>
+        <p>Цифры не главное. Главное — что ты о себе помнишь.</p>
+      </div>
+      <button class="banner-x" data-action="soft-off" type="button" aria-label="Выключить">×</button>
+    </div>
+
+    <div class="banner inbox hidden" id="inboxBanner"></div>
+
+    <!-- вода -->
+    <article class="card card-water" id="waterCard">
+      <div class="card-head">
+        <h2><span class="ico">💧</span> Вода</h2>
+        <button class="link" data-action="water-undo" type="button">отменить</button>
+      </div>
+
+      <div class="water-wrap">
+        <svg class="ring" viewBox="0 0 120 120" aria-hidden="true">
+          <circle class="ring-bg" cx="60" cy="60" r="52"></circle>
+          <circle class="ring-fg" id="waterRing" cx="60" cy="60" r="52"></circle>
+        </svg>
+        <div class="water-center">
+          <div class="water-ml" id="waterMl">0 <small>мл</small></div>
+          <div class="water-goal" id="waterGoal">из 2000 мл</div>
+          <div class="water-pct" id="waterPct">0%</div>
+        </div>
+      </div>
+
+      <div class="quick" id="waterBtns">
+        <button class="qbtn" data-action="water-add" data-ml="100" type="button">+100</button>
+        <button class="qbtn" data-action="water-add" data-ml="200" type="button">+200</button>
+        <button class="qbtn big" data-action="water-add" data-ml="250" type="button">🥛 стакан</button>
+        <button class="qbtn" data-action="water-add" data-ml="500" type="button">+500</button>
+      </div>
+
+      <div class="water-log" id="waterLog"></div>
+    </article>
+
+    <!-- еда -->
+    <article class="card" id="mealsCard">
+      <div class="card-head">
+        <h2><span class="ico">🍽</span> Еда</h2>
+        <span class="card-meta" id="mealsMeta">0 из 3</span>
+      </div>
+      <div class="chips" id="mealsBox"></div>
+      <textarea class="note-input" id="mealNote" rows="2" maxlength="180"
+        placeholder="Что поела? (необязательно)"></textarea>
+    </article>
+
+    <!-- сон -->
+    <article class="card" id="sleepCard">
+      <div class="card-head">
+        <h2><span class="ico">😴</span> Сон</h2>
+        <span class="card-meta" id="sleepMeta">—</span>
+      </div>
+      <div class="sleep-row">
+        <label class="field">
+          <span>лёг(ла)</span>
+          <input type="time" id="sleepFrom" value="">
+        </label>
+        <div class="sleep-arrow">→</div>
+        <label class="field">
+          <span>встал(а)</span>
+          <input type="time" id="sleepTo" value="">
+        </label>
+      </div>
+      <div class="hbar"><i id="sleepBar"></i></div>
+    </article>
+
+    <!-- активность -->
+    <article class="card" id="activityCard">
+      <div class="card-head">
+        <h2><span class="ico">🚶</span> Активность</h2>
+        <span class="card-meta" id="activityMeta">0 мин</span>
+      </div>
+      <div class="quick" id="activityBtns">
+        <button class="qbtn" data-action="act-add" data-min="5" data-kind="разминка" type="button">+5</button>
+        <button class="qbtn" data-action="act-add" data-min="10" data-kind="ходьба" type="button">+10</button>
+        <button class="qbtn big" data-action="act-sheet" type="button">✍️ своё</button>
+        <button class="qbtn" data-action="act-add" data-min="20" data-kind="улица" type="button">+20</button>
+      </div>
+      <div class="hbar"><i id="activityBar"></i></div>
+      <p class="hint" id="activityHint"></p>
+    </article>
+
+    <!-- лекарства -->
+    <article class="card" id="medsCard">
+      <div class="card-head">
+        <h2><span class="ico">💊</span> Витамины и лекарства</h2>
+        <button class="link" data-action="tab" data-tab="settings" type="button">список</button>
+      </div>
+      <div class="chips" id="medsBox"></div>
+    </article>
+
+    <!-- самочувствие -->
+    <article class="card" id="feelingCard">
+      <div class="card-head">
+        <h2><span class="ico">🫶</span> Самочувствие</h2>
+        <span class="card-meta" id="feelingMeta"></span>
+      </div>
+      <div class="moods" id="moodBox"></div>
+      <div class="flags" id="flagsBox"></div>
+      <input class="note-input one-line" id="feelingNote" type="text" maxlength="140"
+        placeholder="пара слов о состоянии">
+    </article>
+
+    <!-- серия -->
+    <article class="card card-streak" id="streakCard">
+      <div class="streak-row">
+        <div class="streak-fire" id="streakFire">🔥</div>
+        <div>
+          <div class="streak-num" id="streakNum">0</div>
+          <div class="muted" id="streakCap">дней подряд</div>
+        </div>
+        <button class="link" data-action="tab" data-tab="history" type="button">история</button>
+      </div>
+    </article>
+
+    <p class="footnote">Данные хранятся на телефоне. Синхронизация — только если подключена комната.</p>
+  </section>
+
+  <!-- ═══════════════ ВМЕСТЕ ═══════════════ -->
+  <section class="screen" data-screen="pair">
+    <div class="daybar">
+      <div>
+        <h1>Вместе</h1>
+        <p class="muted" id="pairSub">ваша пара</p>
+      </div>
+      <button class="icon-btn" data-action="pair-refresh" type="button" aria-label="Обновить">⟳</button>
+    </div>
+
+    <div class="empty hidden" id="pairEmpty">
+      <div class="empty-ico">🔗</div>
+      <h2>Пока никого рядом</h2>
+      <p>Создайте комнату в настройках и передайте код партнёру — или введите его код. Тогда вы увидите друг друга.</p>
+      <button class="btn primary" data-action="tab" data-tab="settings" type="button">Настроить комнату</button>
+    </div>
+
+    <div id="pairBody" class="hidden">
+
+      <article class="card partner-card" id="partnerCard">
+        <div class="partner-head">
+          <div class="avatar" id="partnerAvatar">💜</div>
+          <div class="partner-name">
+            <b id="partnerName">Партнёр</b>
+            <small class="muted" id="partnerSeen">не в сети</small>
+          </div>
+          <button class="heart-btn" data-action="send-heart" type="button" aria-label="Сердечко">💛</button>
+        </div>
+        <div class="partner-grid" id="partnerGrid"></div>
+      </article>
+
+      <article class="card" id="incomingCard">
+        <div class="card-head"><h2><span class="ico">💌</span> Входящие</h2></div>
+        <div id="incomingBox" class="incoming-box"></div>
+      </article>
+
+      <article class="card" id="sendCard">
+        <div class="card-head"><h2><span class="ico">✉️</span> Отправить</h2></div>
+        <div class="quick wrap" id="sendQuick"></div>
+        <div class="row-inline">
+          <input class="note-input one-line" id="noteText" type="text" maxlength="120"
+            placeholder="своими словами…">
+          <button class="btn" data-action="send-note" type="button">➤</button>
+        </div>
+      </article>
+
+      <article class="card" id="pairStatsCard">
+        <div class="card-head"><h2><span class="ico">📊</span> Неделя вдвоём</h2></div>
+        <div id="pairStats" class="pair-stats"></div>
+      </article>
+
+      <p class="footnote" id="pairFoot"></p>
+    </div>
+  </section>
+
+  <!-- ═══════════════ ИСТОРИЯ ═══════════════ -->
+  <section class="screen" data-screen="history">
+    <div class="daybar">
+      <div>
+        <h1>История</h1>
+        <p class="muted">30 дней рядом</p>
+      </div>
+    </div>
+
+    <div class="sum-grid" id="histSummary"></div>
+
+    <article class="card">
+      <div class="card-head">
+        <h2><span class="ico">🗓</span> Календарь</h2>
+        <span class="card-meta" id="histMonth"></span>
+      </div>
+      <div class="cal-legend">
+        <span><i class="sw s0"></i>нет данных</span>
+        <span><i class="sw s1"></i>немного</span>
+        <span><i class="sw s2"></i>половина</span>
+        <span><i class="sw s3"></i>хорошо</span>
+      </div>
+      <div class="cal" id="histGrid"></div>
+    </article>
+
+    <article class="card">
+      <div class="card-head"><h2><span class="ico">💧</span> Вода по дням</h2></div>
+      <div class="chart" id="waterChart"></div>
+    </article>
+
+    <article class="card">
+      <div class="card-head"><h2><span class="ico">🩸</span> Кровь из носа</h2></div>
+      <div class="chart" id="noseChart"></div>
+      <p class="hint" id="noseHint"></p>
+    </article>
+
+    <article class="card">
+      <div class="card-head"><h2><span class="ico">📦</span> Резервная копия</h2></div>
+      <p class="hint">Файл со всеми данными — можно сохранить в облако или перенести на другой телефон.</p>
+      <div class="row-inline">
+        <button class="btn" data-action="export" type="button">Экспорт</button>
+        <button class="btn" data-action="import" type="button">Импорт</button>
+      </div>
+      <input type="file" id="importFile" accept=".json,application/json" class="hidden">
+    </article>
+
+    <p class="footnote">Нажмите на день, чтобы посмотреть подробности.</p>
+  </section>
+
+  <!-- ═══════════════ НАСТРОЙКИ ═══════════════ -->
+  <section class="screen" data-screen="settings">
+    <div class="daybar">
+      <div>
+        <h1>Настройки</h1>
+        <p class="muted">профиль, цели, комната</p>
+      </div>
+    </div>
+
+    <article class="card">
+      <div class="card-head"><h2><span class="ico">🙋</span> Я</h2></div>
+      <div class="row-inline">
+        <label class="field small">
+          <span>эмодзи</span>
+          <input type="text" id="setEmoji" maxlength="4" inputmode="text" placeholder="💛">
+        </label>
+        <label class="field grow">
+          <span>имя</span>
+          <input type="text" id="setName" maxlength="24" placeholder="как тебя звать">
+        </label>
+        <label class="field small">
+          <span>цвет</span>
+          <input type="color" id="setColor" value="#ffb35c">
+        </label>
+      </div>
+      <div class="row-inline top-gap">
+        <label class="field grow">
+          <span>вес, кг (для расчёта воды)</span>
+          <input type="number" id="setWeight" min="30" max="200" step="1" placeholder="0">
+        </label>
+        <button class="btn" data-action="calc-water" type="button">Рассчитать</button>
+      </div>
+    </article>
+
+    <article class="card">
+      <div class="card-head"><h2><span class="ico">🎯</span> Цели</h2></div>
+      <div class="row-inline">
+        <label class="field grow">
+          <span>вода, мл</span>
+          <input type="number" id="goalsWater" min="500" max="5000" step="100">
+        </label>
+        <label class="field grow">
+          <span>стакан, мл</span>
+          <input type="number" id="goalsGlass" min="100" max="600" step="50">
+        </label>
+      </div>
+      <div class="row-inline top-gap">
+        <label class="field grow">
+          <span>сон, ч</span>
+          <input type="number" id="goalsSleep" min="5" max="12" step="0.5">
+        </label>
+        <label class="field grow">
+          <span>приёмы пищи</span>
+          <input type="number" id="goalsMeals" min="1" max="6" step="1">
+        </label>
+      </div>
+      <label class="field grow top-gap">
+        <span>активность, минут в день</span>
+        <input type="number" id="goalsActivity" min="10" max="300" step="5">
+      </label>
+    </article>
+
+    <article class="card">
+      <div class="card-head"><h2><span class="ico">⏰</span> Напоминания</h2></div>
+      <label class="switch-row">
+        <span>Напоминать про воду, пока приложение открыто</span>
+        <input type="checkbox" id="setRemOn">
+      </label>
+      <label class="field grow top-gap">
+        <span>каждые, минут</span>
+        <input type="number" id="setRemEvery" min="15" max="180" step="5">
+      </label>
+      <label class="switch-row top-gap">
+        <span>Мягкий режим — без процентов и давления</span>
+        <input type="checkbox" id="setSoft">
+      </label>
+      <p class="hint">Фоновые уведомления появятся, когда приложение будет открываться по ссылке (не из файла).</p>
+    </article>
+
+    <article class="card">
+      <div class="card-head"><h2><span class="ico">💊</span> Мой список</h2></div>
+      <div id="medsList" class="meds-list"></div>
+      <div class="row-inline top-gap">
+        <input class="note-input one-line" id="newMedName" type="text" maxlength="40" placeholder="название, например Магний">
+        <button class="btn" data-action="add-med" type="button">＋</button>
+      </div>
+    </article>
+
+    <article class="card">
+      <div class="card-head">
+        <h2><span class="ico">🔗</span> Комната</h2>
+        <span class="card-meta" id="roomState">не создана</span>
+      </div>
+      <p class="hint">Один код на двоих. Создайте комнату и передайте код партнёру — или введите код, который дал он.</p>
+      <div class="code-box">
+        <input type="text" id="setRoom" maxlength="12" placeholder="КОД" autocapitalize="characters" spellcheck="false">
+        <button class="icon-btn" data-action="copy-room" type="button" aria-label="Скопировать">⧉</button>
+      </div>
+      <div class="row-inline top-gap">
+        <button class="btn primary" data-action="room-create" type="button">Создать комнату</button>
+        <button class="btn" data-action="room-join" type="button">Войти по коду</button>
+      </div>
+      <button class="link danger top-gap" data-action="room-leave" type="button">Выйти из комнаты</button>
+    </article>
+
+    <article class="card">
+      <div class="card-head"><h2><span class="ico">🔥</span> Firebase</h2></div>
+      <p class="hint">Нужен, чтобы видеть данные друг друга. Инструкция — в файле ЧИТАЙ.md рядом с приложением.</p>
+      <label class="field grow">
+        <span>databaseURL</span>
+        <input type="url" id="setDb" placeholder="https://xxx-default-rtdb.firebaseio.com" spellcheck="false" autocapitalize="off">
+      </label>
+      <label class="field grow top-gap">
+        <span>apiKey (для анонимного входа)</span>
+        <input type="text" id="setKey" placeholder="AIza…" spellcheck="false" autocapitalize="off">
+      </label>
+      <div class="row-inline top-gap">
+        <button class="btn primary" data-action="db-connect" type="button">Подключить</button>
+        <button class="btn" data-action="db-test" type="button">Проверить</button>
+      </div>
+      <p class="hint" id="dbStatus">не подключено</p>
+    </article>
+
+    <article class="card">
+      <div class="card-head"><h2><span class="ico">⚙️</span> Данные</h2></div>
+      <div class="row-inline">
+        <button class="btn" data-action="export" type="button">Экспорт</button>
+        <button class="btn" data-action="import" type="button">Импорт</button>
+        <button class="btn danger" data-action="wipe" type="button">Стереть всё</button>
+      </div>
+      <p class="hint" id="storageInfo"></p>
+    </article>
+
+    <p class="footnote">«Вместе» · версия 1.0 · сделано с любовью</p>
+  </section>
+
+</main>
+
+<!-- ─────────────────────────── нижние вкладки ─────────────────────────── -->
+<nav id="tabs">
+  <button class="tab active" data-action="tab" data-tab="today" type="button">
+    <span class="tab-ico">💧</span><span class="tab-cap">Сегодня</span>
+  </button>
+  <button class="tab" data-action="tab" data-tab="pair" type="button">
+    <span class="tab-ico">💞</span><span class="tab-cap">Вместе</span>
+  </button>
+  <button class="tab" data-action="tab" data-tab="history" type="button">
+    <span class="tab-ico">🗓</span><span class="tab-cap">История</span>
+  </button>
+  <button class="tab" data-action="tab" data-tab="settings" type="button">
+    <span class="tab-ico">⚙️</span><span class="tab-cap">Настройки</span>
+  </button>
+</nav>
+
+<!-- ─────────────────────────── шторка ─────────────────────────── -->
+<div id="sheetBack" class="sheet-back hidden">
+  <div id="sheet" class="sheet" role="dialog" aria-modal="true">
+    <div class="sheet-grip"></div>
+    <div class="sheet-head">
+      <h2 id="sheetTitle">Заголовок</h2>
+      <button class="icon-btn" data-action="sheet-close" type="button" aria-label="Закрыть">×</button>
+    </div>
+    <div id="sheetBody" class="sheet-body"></div>
+  </div>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+
+<script src="config.js"></script>
+<script src="core.js"></script>
+<script src="net.js"></script>
+<script src="ui.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
