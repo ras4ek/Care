@@ -5,7 +5,7 @@
    Запросы к Firebase не перехватываются.
    ──────────────────────────────────────────────────────────────── */
 
-var CACHE = 'vmeste-v3';
+var CACHE = 'vmeste-v5';
 var SHELL = [
   './',
   './index.html',
@@ -16,6 +16,8 @@ var SHELL = [
   './net.js',
   './ui.js',
   './app.js',
+  './welcome.jpg',
+  './tree.jpg',
   './icon.svg',
   './icon-maskable.svg'
 ];

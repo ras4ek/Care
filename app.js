@@ -146,6 +146,13 @@
       }, 420);
     }
 
+    /* предпросмотр первого экрана: ?welcome */
+    if (onboarded && /(^|[?&])welcome(=|&|$)/.test(location.search) && App.UI) {
+      setTimeout(function () {
+        App.UI.welcome();
+      }, 520);
+    }
+
     /* соединение */
     if (App.Net && App.Net.ready()) {
       Sync.start();

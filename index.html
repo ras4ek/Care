@@ -2,21 +2,27 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<meta name="theme-color" content="#0A0D12">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#F3F1EC">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Вместе">
 <meta name="format-detection" content="telephone=no">
-<meta name="color-scheme" content="dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<meta name="color-scheme" content="light">
 <meta name="description" content="Вместе — тихий трекер заботы для двоих: вода, еда, сон, движение и самочувствие.">
 <title>Вместе</title>
-<link rel="stylesheet" href="styles.css">
 <link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
+<link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-<!-- ─────────────── иконки ─────────────── -->
-<svg id="sprite" aria-hidden="true" focusable="false" style="position:absolute;width:0;height:0;overflow:hidden">
+<!-- ─────────────────────────── иконки ─────────────────────────── -->
+<svg id="sprite" aria-hidden="true" focusable="false">
   <symbol id="i-water" viewBox="0 0 24 24"><path d="M12 2.7l5.4 5.4a7.6 7.6 0 1 1-10.8 0z"/></symbol>
   <symbol id="i-meal" viewBox="0 0 24 24"><path d="M4 3v6a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2V3"/><path d="M7 11v10"/><path d="M18 3c-1.4 1.8-2 3.8-2 6s.6 3.4 2 4"/><path d="M18 3v18"/></symbol>
   <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20.4 14.6A8.6 8.6 0 0 1 9.4 3.6a8.6 8.6 0 1 0 11 11z"/></symbol>
@@ -41,7 +47,6 @@
   <symbol id="i-inbox" viewBox="0 0 24 24"><path d="M21 12h-5l-2 3h-4l-2-3H3"/><path d="M5.6 4.6L3 12v6a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-6l-2.6-7.4A2 2 0 0 0 16.5 3h-9a2 2 0 0 0-1.9 1.6z"/></symbol>
   <symbol id="i-share" viewBox="0 0 24 24"><path d="M4 12.5V20a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7.5"/><path d="M12 2.5v13M8 6.5l4-4 4 4"/></symbol>
   <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8.5" y="8.5" width="12" height="12" rx="2.5"/><path d="M15.5 5.5v-1a2 2 0 0 0-2-2h-9a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h1"/></symbol>
-  <symbol id="i-cloud" viewBox="0 0 24 24"><path d="M17.5 19H9a7 7 0 1 1 6.7-9h1.8a4.5 4.5 0 1 1 0 9z"/></symbol>
   <symbol id="i-bell" viewBox="0 0 24 24"><path d="M18 8.5a6 6 0 0 0-12 0c0 6.5-2.5 8-2.5 8h17s-2.5-1.5-2.5-8"/><path d="M13.7 20.5a2 2 0 0 1-3.4 0"/></symbol>
   <symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7.5 10.5L12 15l4.5-4.5M12 15V3"/></symbol>
   <symbol id="i-upload" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7.5 7.5L12 3l4.5 4.5M12 3v12"/></symbol>
@@ -58,46 +63,65 @@
   <symbol id="i-battery" viewBox="0 0 24 24"><rect x="2" y="7" width="16" height="10" rx="2.5"/><path d="M21 10.5v3"/><path d="M6 10.5v3"/></symbol>
   <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3L2.5 20h19z"/><path d="M12 9.5v4.5M12 17h.01"/></symbol>
   <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></symbol>
-  <symbol id="i-database" viewBox="0 0 24 24"><ellipse cx="12" cy="5.5" rx="8" ry="3"/><path d="M4 5.5v13c0 1.7 3.6 3 8 3s8-1.3 8-3v-13"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></symbol>
   <symbol id="i-chevron" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></symbol>
   <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
   <symbol id="i-apple" viewBox="0 0 24 24"><path d="M12 8.2c-1.5-1.5-4-1.8-5.6-.3C4.2 9.9 4.6 14 7 16.8c1.4 1.7 2.7 2.5 3.6 2.5.5 0 .9-.2 1.4-.2s.9.2 1.4.2c.9 0 2.2-.8 3.6-2.5 2.4-2.8 2.8-6.9.6-8.9-1.6-1.5-4.1-1.2-5.6.3z"/><path d="M12 8.2V6.5c0-1.4.9-2.6 2.2-3"/></symbol>
   <symbol id="i-edit" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4.5 1.5L5 15z"/></symbol>
+  <symbol id="i-note" viewBox="0 0 24 24"><path d="M5 3.5h10.5L20 8v12.5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-15a2 2 0 0 1 1-2z"/><path d="M15 3.5V8h4.5M8 12.5h8M8 16.5h5"/></symbol>
+  <symbol id="i-gift" viewBox="0 0 24 24"><rect x="3" y="8.5" width="18" height="4" rx="1.5"/><path d="M5 12.5v7a1.5 1.5 0 0 0 1.5 1.5h11a1.5 1.5 0 0 0 1.5-1.5v-7"/><path d="M12 8.5V21"/><path d="M12 8.5S9.5 8 8.3 6.8A2.4 2.4 0 0 1 11.7 3.4C12.9 4.6 12 8.5 12 8.5zM12 8.5s2.5-.5 3.7-1.7a2.4 2.4 0 0 0-3.4-3.4C11.1 4.6 12 8.5 12 8.5z"/></symbol>
 </svg>
 
-<!-- ─────────────── загрузка ─────────────── -->
+<!-- ─────────────────────────── заставка ─────────────────────────── -->
 <div id="boot">
   <div class="boot-mark"><svg class="ic"><use href="#i-heart"/></svg></div>
-  <div class="boot-text">Загружаю «Вместе»…</div>
+  <div class="boot-text">Вместе</div>
 </div>
 
-<!-- ─────────────── верхняя панель ─────────────── -->
+<!-- ─────────────────────────── первое открытие ─────────────────────────── -->
+<section id="welcome" class="hidden">
+  <div class="welcome-photo">
+    <img src="welcome.jpg" alt="" width="519" height="773" decoding="async">
+  </div>
+  <div class="welcome-body">
+    <div class="welcome-mark"><svg class="ic"><use href="#i-heart"/></svg>Вместе</div>
+    <h1>Забота, которую<br>видно.</h1>
+    <p>Вода, еда, сон, движение и самочувствие — тихо, без давления. Для двоих.</p>
+
+    <label class="field top-gap">
+      <span>Как тебя звать</span>
+      <input type="text" id="welcomeName" maxlength="24" placeholder="Имя или прозвище" autocomplete="given-name">
+    </label>
+
+    <button class="btn primary wide top-gap" type="button" data-action="welcome-save">Начать</button>
+    <p class="welcome-hint">Партнёр пришлёт ссылку — просто откройте её на этом телефоне, и вы будете вдвоём.</p>
+
+    <p class="welcome-foot">Записи остаются на телефоне. Вдвоём — когда партнёр откроет ссылку.</p>
+  </div>
+</section>
+
+<!-- ─────────────────────────── верхняя панель ─────────────────────────── -->
 <header id="topbar">
   <div class="brand">
-    <span class="brand-mark"><svg class="ic"><use href="#i-heart"/></svg></span>
-    <div class="brand-text">
-      <b>Вместе</b>
-      <small id="brandSub">забота вдвоём</small>
-    </div>
+    <span class="brand-dot"></span>
+    <b>Вместе</b>
+    <small id="brandSub">забота вдвоём</small>
   </div>
   <button class="sync-pill" id="syncPill" data-action="sync-info" type="button">
-    <span class="sync-dot" id="syncDot"></span>
-    <span id="syncLabel">локально</span>
+    <span class="sync-dot" id="syncDot"></span><span id="syncLabel">на телефоне</span>
   </button>
 </header>
 
-<!-- ─────────────── экраны ─────────────── -->
 <main id="screens">
 
-  <!-- ═══════════════ СЕГОДНЯ ═══════════════ -->
+  <!-- ═══════════ СЕГОДНЯ ═══════════ -->
   <section class="screen active" data-screen="today">
 
-    <div class="daybar">
-      <div>
+    <div class="hero">
+      <div class="hero-text">
+        <p class="kicker" id="todayLabel">сегодня</p>
         <h1 id="greet">Привет</h1>
-        <p class="muted" id="todayLabel">сегодня</p>
       </div>
-      <div class="daybar-score">
+      <div class="hero-score">
         <div class="score-num" id="dayScore">0<span>%</span></div>
         <div class="score-cap" id="dayScoreCap">день</div>
       </div>
@@ -105,20 +129,29 @@
 
     <div class="banner soft hidden" id="softBanner">
       <span class="banner-ico"><svg class="ic"><use href="#i-leaf"/></svg></span>
-      <div>
+      <div class="banner-text">
         <b>Мягкий режим</b>
-        <p>Цифры не главное. Главное — что ты о себе помнишь.</p>
+        <p>Без процентов и давления. Отмечай только то, что получилось.</p>
       </div>
       <button class="banner-x" data-action="soft-off" type="button" aria-label="Выключить"><svg class="ic"><use href="#i-x"/></svg></button>
     </div>
 
     <div class="banner inbox hidden" id="inboxBanner"></div>
 
+    <button class="pair-strip hidden" id="todayPair" data-action="tab" data-tab="pair" type="button">
+      <span class="avatar xs" id="todayPairAvatar">О</span>
+      <span class="pair-strip-text">
+        <b id="todayPairName">Она</b>
+        <small id="todayPairMeta">рядом</small>
+      </span>
+      <span class="pair-strip-chev"><svg class="ic"><use href="#i-chevron"/></svg></span>
+    </button>
+
     <!-- вода -->
     <article class="card card-water" id="waterCard">
       <div class="card-head">
-        <h2><span class="ico water"><svg class="ic"><use href="#i-water"/></svg></span> Вода</h2>
-        <button class="link" data-action="water-undo" type="button">отменить</button>
+        <h2><span class="ico water"><svg class="ic"><use href="#i-water"/></svg></span>Вода</h2>
+        <button class="link" data-action="water-undo" type="button">Отменить</button>
       </div>
 
       <div class="water-wrap">
@@ -127,16 +160,16 @@
           <circle class="ring-fg" id="waterRing" cx="60" cy="60" r="52"></circle>
         </svg>
         <div class="water-center">
-          <div class="water-ml" id="waterMl">0 <small>мл</small></div>
+          <div class="water-ml" id="waterMl">0<small>мл</small></div>
           <div class="water-goal" id="waterGoal">из 2 000 мл</div>
-          <div class="water-pct" id="waterPct">0%</div>
         </div>
       </div>
 
+      <p class="water-note"><span id="waterPct">0%</span> · <span id="waterLeft">осталось 2 000 мл</span></p>
+
       <div class="quick" id="waterBtns">
         <button class="qbtn" data-action="water-add" data-ml="100" type="button">+100</button>
-        <button class="qbtn" data-action="water-add" data-ml="200" type="button">+200</button>
-        <button class="qbtn big" data-action="water-add" data-ml="250" type="button"><svg class="ic"><use href="#i-water"/></svg> стакан</button>
+        <button class="qbtn big" data-action="water-add" type="button"><svg class="ic"><use href="#i-water"/></svg>Стакан</button>
         <button class="qbtn" data-action="water-add" data-ml="500" type="button">+500</button>
       </div>
 
@@ -146,28 +179,27 @@
     <!-- еда -->
     <article class="card" id="mealsCard">
       <div class="card-head">
-        <h2><span class="ico food"><svg class="ic"><use href="#i-meal"/></svg></span> Еда</h2>
+        <h2><span class="ico food"><svg class="ic"><use href="#i-meal"/></svg></span>Еда</h2>
         <span class="card-meta" id="mealsMeta">0 из 3</span>
       </div>
       <div class="chips" id="mealsBox"></div>
-      <textarea class="note-input" id="mealNote" rows="2" maxlength="180"
-        placeholder="Что поела? Необязательно"></textarea>
+      <textarea class="note-input" id="mealNote" rows="2" maxlength="180" placeholder="Что было в тарелке — необязательно"></textarea>
     </article>
 
     <!-- сон -->
     <article class="card" id="sleepCard">
       <div class="card-head">
-        <h2><span class="ico sleep"><svg class="ic"><use href="#i-moon"/></svg></span> Сон</h2>
+        <h2><span class="ico sleep"><svg class="ic"><use href="#i-moon"/></svg></span>Сон</h2>
         <span class="card-meta" id="sleepMeta">—</span>
       </div>
       <div class="sleep-row">
         <label class="field">
-          <span>лёг(ла)</span>
+          <span>Отбой</span>
           <input type="time" id="sleepFrom" value="">
         </label>
         <div class="sleep-arrow"><svg class="ic"><use href="#i-arrow-right"/></svg></div>
         <label class="field">
-          <span>встал(а)</span>
+          <span>Подъём</span>
           <input type="time" id="sleepTo" value="">
         </label>
       </div>
@@ -177,70 +209,70 @@
     <!-- активность -->
     <article class="card" id="activityCard">
       <div class="card-head">
-        <h2><span class="ico move"><svg class="ic"><use href="#i-move"/></svg></span> Активность</h2>
+        <h2><span class="ico move"><svg class="ic"><use href="#i-move"/></svg></span>Движение</h2>
         <span class="card-meta" id="activityMeta">0 мин</span>
       </div>
       <div class="quick" id="activityBtns">
         <button class="qbtn" data-action="act-add" data-min="5" data-kind="разминка" type="button">+5</button>
         <button class="qbtn" data-action="act-add" data-min="10" data-kind="ходьба" type="button">+10</button>
-        <button class="qbtn big" data-action="act-sheet" type="button"><svg class="ic"><use href="#i-edit"/></svg> своё</button>
         <button class="qbtn" data-action="act-add" data-min="20" data-kind="улица" type="button">+20</button>
+        <button class="qbtn big" data-action="act-sheet" type="button"><svg class="ic"><use href="#i-edit"/></svg>Своё</button>
       </div>
-      <div class="hbar"><i id="activityBar"></i></div>
       <p class="hint" id="activityHint"></p>
-    </article>
-
-    <!-- лекарства -->
-    <article class="card" id="medsCard">
-      <div class="card-head">
-        <h2><span class="ico pill"><svg class="ic"><use href="#i-pill"/></svg></span> Витамины и лекарства</h2>
-        <button class="link" data-action="tab" data-tab="settings" type="button">список</button>
-      </div>
-      <div class="chips" id="medsBox"></div>
+      <div class="hbar"><i id="activityBar"></i></div>
     </article>
 
     <!-- самочувствие -->
     <article class="card" id="feelingCard">
       <div class="card-head">
-        <h2><span class="ico feel"><svg class="ic"><use href="#i-heart"/></svg></span> Самочувствие</h2>
+        <h2><span class="ico feel"><svg class="ic"><use href="#i-heart"/></svg></span>Самочувствие</h2>
         <span class="card-meta" id="feelingMeta"></span>
       </div>
       <div class="moods" id="moodBox"></div>
       <div class="flags" id="flagsBox"></div>
-      <input class="note-input one-line" id="feelingNote" type="text" maxlength="140"
-        placeholder="Пара слов о состоянии">
+      <input class="note-input one-line" id="feelingNote" type="text" maxlength="140" placeholder="Пара слов о состоянии">
+    </article>
+
+    <!-- лекарства -->
+    <article class="card" id="medsCard">
+      <div class="card-head">
+        <h2><span class="ico pill"><svg class="ic"><use href="#i-pill"/></svg></span>Витамины</h2>
+        <button class="link" data-action="tab" data-tab="settings" type="button">Настроить</button>
+      </div>
+      <div class="chips" id="medsBox"></div>
     </article>
 
     <!-- серия -->
     <article class="card card-streak" id="streakCard">
+      <img class="streak-thumb" src="tree.jpg" alt="" aria-hidden="true" loading="lazy" decoding="async">
       <div class="streak-row">
         <div class="streak-fire"><svg class="ic"><use href="#i-flame"/></svg></div>
-        <div>
+        <div class="streak-text">
           <div class="streak-num" id="streakNum">0</div>
           <div class="muted" id="streakCap">дней подряд</div>
         </div>
-        <button class="link" data-action="tab" data-tab="history" type="button">история</button>
+        <button class="link" data-action="tab" data-tab="history" type="button">История</button>
       </div>
     </article>
 
-    <p class="footnote">Данные хранятся на телефоне и синхронизируются, когда пара подключена.</p>
+    <p class="footnote">Записи хранятся на телефоне. Вдвоём — когда пара подключена.</p>
   </section>
 
-  <!-- ═══════════════ ВМЕСТЕ ═══════════════ -->
+  <!-- ═══════════ ВМЕСТЕ ═══════════ -->
   <section class="screen" data-screen="pair">
-    <div class="daybar">
-      <div>
+    <div class="hero">
+      <div class="hero-text">
+        <p class="kicker" id="pairSub">ваша пара</p>
         <h1>Вместе</h1>
-        <p class="muted" id="pairSub">ваша пара</p>
       </div>
       <button class="icon-btn" data-action="pair-refresh" type="button" aria-label="Обновить"><svg class="ic"><use href="#i-refresh"/></svg></button>
     </div>
 
     <div class="empty hidden" id="pairEmpty">
       <div class="empty-ico"><svg class="ic"><use href="#i-users"/></svg></div>
-      <h2>Пока никого рядом</h2>
-      <p>Пригласите партнёра одной ссылкой. Он откроет её — и вы сразу увидите друг друга.</p>
-      <button class="btn primary" data-action="invite" type="button"><svg class="ic"><use href="#i-share"/></svg> Пригласить партнёра</button>
+      <h2>Пока вдвоём только вы</h2>
+      <p>Отправьте партнёру одну ссылку. Он откроет её — и вы сразу увидите друг друга. Никаких кодов и настроек.</p>
+      <button class="btn primary" data-action="invite" type="button"><svg class="ic"><use href="#i-share"/></svg>Пригласить партнёра</button>
     </div>
 
     <div id="pairBody" class="hidden">
@@ -250,30 +282,29 @@
           <div class="avatar" id="partnerAvatar">П</div>
           <div class="partner-name">
             <b id="partnerName">Партнёр</b>
-            <small class="muted" id="partnerSeen">не в сети</small>
+            <small id="partnerSeen">не в сети</small>
           </div>
-          <button class="heart-btn" data-action="send-heart" type="button" aria-label="Отправить сердечко"><svg class="ic"><use href="#i-heart"/></svg></button>
+          <button class="heart-btn" data-action="send-heart" type="button" aria-label="Отправить сердечко"><svg class="ic"><use href="#i-heart-fill"/></svg></button>
         </div>
         <div class="partner-grid" id="partnerGrid"></div>
       </article>
 
       <article class="card" id="incomingCard">
-        <div class="card-head"><h2><span class="ico feel"><svg class="ic"><use href="#i-inbox"/></svg></span> Входящие</h2></div>
+        <div class="card-head"><h2><span class="ico feel"><svg class="ic"><use href="#i-inbox"/></svg></span>Входящие</h2></div>
         <div id="incomingBox" class="incoming-box"></div>
       </article>
 
       <article class="card" id="sendCard">
-        <div class="card-head"><h2><span class="ico accent"><svg class="ic"><use href="#i-send"/></svg></span> Отправить</h2></div>
+        <div class="card-head"><h2><span class="ico accent"><svg class="ic"><use href="#i-send"/></svg></span>Отправить</h2></div>
         <div class="quick wrap" id="sendQuick"></div>
         <div class="row-inline">
-          <input class="note-input one-line" id="noteText" type="text" maxlength="120"
-            placeholder="Своими словами…">
+          <input class="note-input one-line" id="noteText" type="text" maxlength="120" placeholder="Своими словами">
           <button class="btn send" data-action="send-note" type="button" aria-label="Отправить"><svg class="ic"><use href="#i-send"/></svg></button>
         </div>
       </article>
 
       <article class="card" id="pairStatsCard">
-        <div class="card-head"><h2><span class="ico accent"><svg class="ic"><use href="#i-chart"/></svg></span> Неделя вдвоём</h2></div>
+        <div class="card-head"><h2><span class="ico accent"><svg class="ic"><use href="#i-chart"/></svg></span>Неделя вдвоём</h2></div>
         <div id="pairStats" class="pair-stats"></div>
       </article>
 
@@ -281,12 +312,12 @@
     </div>
   </section>
 
-  <!-- ═══════════════ ИСТОРИЯ ═══════════════ -->
+  <!-- ═══════════ ИСТОРИЯ ═══════════ -->
   <section class="screen" data-screen="history">
-    <div class="daybar">
-      <div>
+    <div class="hero">
+      <div class="hero-text">
+        <p class="kicker">последние 30 дней</p>
         <h1>История</h1>
-        <p class="muted">30 дней рядом</p>
       </div>
       <button class="icon-btn" data-action="export" type="button" aria-label="Сохранить копию"><svg class="ic"><use href="#i-download"/></svg></button>
     </div>
@@ -295,7 +326,7 @@
 
     <article class="card">
       <div class="card-head">
-        <h2><span class="ico accent"><svg class="ic"><use href="#i-calendar"/></svg></span> Календарь</h2>
+        <h2><span class="ico accent"><svg class="ic"><use href="#i-calendar"/></svg></span>Календарь</h2>
         <span class="card-meta" id="histMonth"></span>
       </div>
       <div class="cal-legend">
@@ -308,186 +339,218 @@
     </article>
 
     <article class="card">
-      <div class="card-head"><h2><span class="ico water"><svg class="ic"><use href="#i-water"/></svg></span> Вода по дням</h2></div>
+      <div class="card-head"><h2><span class="ico water"><svg class="ic"><use href="#i-water"/></svg></span>Вода по дням</h2></div>
       <div class="chart" id="waterChart"></div>
     </article>
 
+    <article class="card" id="statsCard">
+      <div class="card-head"><h2><span class="ico accent"><svg class="ic"><use href="#i-chart"/></svg></span>Статистика · 30 дней</h2></div>
+      <div class="stats" id="statsGrid"></div>
+    </article>
+
     <article class="card">
-      <div class="card-head"><h2><span class="ico rose"><svg class="ic"><use href="#i-water"/></svg></span> Кровь из носа</h2></div>
+      <div class="card-head"><h2><span class="ico rose"><svg class="ic"><use href="#i-water"/></svg></span>Кровь из носа</h2></div>
       <div class="chart" id="noseChart"></div>
       <p class="hint" id="noseHint"></p>
     </article>
 
-    <article class="card">
-      <div class="card-head"><h2><span class="ico accent"><svg class="ic"><use href="#i-database"/></svg></span> Резервная копия</h2></div>
-      <p class="hint">Файл со всеми данными — можно сохранить в облако или перенести на другой телефон.</p>
-      <div class="row-inline">
-        <button class="btn" data-action="export" type="button"><svg class="ic"><use href="#i-download"/></svg> Экспорт</button>
-        <button class="btn" data-action="import" type="button"><svg class="ic"><use href="#i-upload"/></svg> Импорт</button>
-      </div>
-      <input type="file" id="importFile" accept=".json,application/json" class="hidden">
-    </article>
-
-    <p class="footnote">Нажмите на день, чтобы посмотреть подробности.</p>
+    <p class="footnote">Нажмите на день в календаре, чтобы увидеть подробности.</p>
   </section>
 
-  <!-- ═══════════════ НАСТРОЙКИ ═══════════════ -->
+  <!-- ═══════════ НАСТРОЙКИ ═══════════ -->
   <section class="screen" data-screen="settings">
-    <div class="daybar">
-      <div>
+    <div class="hero">
+      <div class="hero-text">
+        <p class="kicker">профиль, цели и пара</p>
         <h1>Настройки</h1>
-        <p class="muted">профиль, цели, пара</p>
       </div>
     </div>
 
-    <article class="card">
-      <div class="card-head"><h2><span class="ico accent"><svg class="ic"><use href="#i-user"/></svg></span> Профиль</h2></div>
-      <div class="profile-row">
-        <div class="avatar me" id="myAvatar">Я</div>
-        <div class="profile-fields">
-          <label class="field grow">
-            <span>имя</span>
-            <input type="text" id="setName" maxlength="24" placeholder="Как тебя звать">
-          </label>
-          <label class="field color-field">
-            <span>цвет</span>
-            <input type="color" id="setColor" value="#7CE0B8">
-          </label>
+    <!-- ты -->
+    <div class="sec">
+      <div class="sec-title">Ты</div>
+      <div class="list">
+        <div class="me-row">
+          <div class="avatar me" id="myAvatar">Я</div>
+          <div class="me-fields">
+            <label class="field">
+              <span>Имя</span>
+              <input type="text" id="setName" maxlength="24" placeholder="Как тебя звать">
+            </label>
+            <div class="swatches" role="group" aria-label="Цвет профиля">
+              <button class="swatch" style="--c:#D9C3A0" data-action="set-color" data-color="#D9C3A0" type="button" aria-label="Песочный"></button>
+              <button class="swatch" style="--c:#A8CFC0" data-action="set-color" data-color="#A8CFC0" type="button" aria-label="Мятный"></button>
+              <button class="swatch" style="--c:#9DB8D8" data-action="set-color" data-color="#9DB8D8" type="button" aria-label="Небесный"></button>
+              <button class="swatch" style="--c:#C3A8D6" data-action="set-color" data-color="#C3A8D6" type="button" aria-label="Лавандовый"></button>
+              <button class="swatch" style="--c:#D9A3A9" data-action="set-color" data-color="#D9A3A9" type="button" aria-label="Розовый"></button>
+              <input type="color" id="setColor" class="sr-only" value="#D9C3A0" aria-label="Свой цвет">
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <span class="row-ico" style="--c:var(--ink-2)"><svg class="ic"><use href="#i-user"/></svg></span>
+          <span class="row-text"><b>Вес</b><small>подскажем норму воды</small></span>
+          <input class="num" type="number" id="setWeight" min="30" max="200" step="1" placeholder="—" inputmode="numeric">
+          <button class="mini-btn" data-action="calc-water" type="button">Норма</button>
         </div>
       </div>
-      <div class="row-inline top-gap">
-        <label class="field grow">
-          <span>вес, кг — для расчёта воды</span>
-          <input type="number" id="setWeight" min="30" max="200" step="1" placeholder="0">
-        </label>
-        <button class="btn" data-action="calc-water" type="button">Рассчитать</button>
-      </div>
-    </article>
+    </div>
 
-    <article class="card">
-      <div class="card-head"><h2><span class="ico accent"><svg class="ic"><use href="#i-chart"/></svg></span> Цели</h2></div>
-      <div class="row-inline">
-        <label class="field grow">
-          <span>вода, мл</span>
-          <input type="number" id="goalsWater" min="500" max="5000" step="100">
+    <!-- цели -->
+    <div class="sec">
+      <div class="sec-title">Цели на день</div>
+      <div class="list">
+        <div class="row">
+          <span class="row-ico" style="--c:var(--water)"><svg class="ic"><use href="#i-water"/></svg></span>
+          <span class="row-text"><b>Вода</b><small>миллилитров</small></span>
+          <div class="stepper">
+            <button data-action="goal-step" data-goal="goalsWater" data-delta="-100" type="button" aria-label="Меньше"><svg class="ic"><use href="#i-minus"/></svg></button>
+            <input class="num" type="number" id="goalsWater" min="500" max="5000" step="100" inputmode="numeric">
+            <button data-action="goal-step" data-goal="goalsWater" data-delta="100" type="button" aria-label="Больше"><svg class="ic"><use href="#i-plus"/></svg></button>
+          </div>
+        </div>
+        <div class="row">
+          <span class="row-ico" style="--c:var(--water)"><svg class="ic"><use href="#i-water"/></svg></span>
+          <span class="row-text"><b>Стакан</b><small>объём кнопки</small></span>
+          <div class="stepper">
+            <button data-action="goal-step" data-goal="goalsGlass" data-delta="-50" type="button" aria-label="Меньше"><svg class="ic"><use href="#i-minus"/></svg></button>
+            <input class="num" type="number" id="goalsGlass" min="100" max="600" step="50" inputmode="numeric">
+            <button data-action="goal-step" data-goal="goalsGlass" data-delta="50" type="button" aria-label="Больше"><svg class="ic"><use href="#i-plus"/></svg></button>
+          </div>
+        </div>
+        <div class="row">
+          <span class="row-ico" style="--c:var(--sleep)"><svg class="ic"><use href="#i-moon"/></svg></span>
+          <span class="row-text"><b>Сон</b><small>часов</small></span>
+          <div class="stepper">
+            <button data-action="goal-step" data-goal="goalsSleep" data-delta="-0.5" type="button" aria-label="Меньше"><svg class="ic"><use href="#i-minus"/></svg></button>
+            <input class="num" type="number" id="goalsSleep" min="5" max="12" step="0.5" inputmode="decimal">
+            <button data-action="goal-step" data-goal="goalsSleep" data-delta="0.5" type="button" aria-label="Больше"><svg class="ic"><use href="#i-plus"/></svg></button>
+          </div>
+        </div>
+        <div class="row">
+          <span class="row-ico" style="--c:var(--food)"><svg class="ic"><use href="#i-meal"/></svg></span>
+          <span class="row-text"><b>Еда</b><small>приёмов пищи</small></span>
+          <div class="stepper">
+            <button data-action="goal-step" data-goal="goalsMeals" data-delta="-1" type="button" aria-label="Меньше"><svg class="ic"><use href="#i-minus"/></svg></button>
+            <input class="num" type="number" id="goalsMeals" min="1" max="6" step="1" inputmode="numeric">
+            <button data-action="goal-step" data-goal="goalsMeals" data-delta="1" type="button" aria-label="Больше"><svg class="ic"><use href="#i-plus"/></svg></button>
+          </div>
+        </div>
+        <div class="row">
+          <span class="row-ico" style="--c:var(--move)"><svg class="ic"><use href="#i-move"/></svg></span>
+          <span class="row-text"><b>Движение</b><small>минут</small></span>
+          <div class="stepper">
+            <button data-action="goal-step" data-goal="goalsActivity" data-delta="-5" type="button" aria-label="Меньше"><svg class="ic"><use href="#i-minus"/></svg></button>
+            <input class="num" type="number" id="goalsActivity" min="10" max="300" step="5" inputmode="numeric">
+            <button data-action="goal-step" data-goal="goalsActivity" data-delta="5" type="button" aria-label="Больше"><svg class="ic"><use href="#i-plus"/></svg></button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- напоминания -->
+    <div class="sec">
+      <div class="sec-title">Ритм</div>
+      <div class="list">
+        <label class="row">
+          <span class="row-ico" style="--c:var(--accent)"><svg class="ic"><use href="#i-bell"/></svg></span>
+          <span class="row-text"><b>Напоминать про воду</b><small>пока приложение открыто</small></span>
+          <input class="switch" type="checkbox" id="setRemOn">
         </label>
-        <label class="field grow">
-          <span>стакан, мл</span>
-          <input type="number" id="goalsGlass" min="100" max="600" step="50">
+        <div class="row">
+          <span class="row-ico" style="--c:var(--ink-2)"><svg class="ic"><use href="#i-clock"/></svg></span>
+          <span class="row-text"><b>Не чаще, чем раз в</b><small>минут</small></span>
+          <div class="stepper">
+            <button data-action="goal-step" data-goal="setRemEvery" data-delta="-5" type="button" aria-label="Меньше"><svg class="ic"><use href="#i-minus"/></svg></button>
+            <input class="num" type="number" id="setRemEvery" min="15" max="180" step="5" inputmode="numeric">
+            <button data-action="goal-step" data-goal="setRemEvery" data-delta="5" type="button" aria-label="Больше"><svg class="ic"><use href="#i-plus"/></svg></button>
+          </div>
+        </div>
+        <label class="row">
+          <span class="row-ico" style="--c:var(--accent)"><svg class="ic"><use href="#i-leaf"/></svg></span>
+          <span class="row-text"><b>Мягкий режим</b><small>без процентов и давления</small></span>
+          <input class="switch" type="checkbox" id="setSoft">
         </label>
       </div>
-      <div class="row-inline top-gap">
-        <label class="field grow">
-          <span>сон, ч</span>
-          <input type="number" id="goalsSleep" min="5" max="12" step="0.5">
-        </label>
-        <label class="field grow">
-          <span>приёмы пищи</span>
-          <input type="number" id="goalsMeals" min="1" max="6" step="1">
-        </label>
+    </div>
+
+    <!-- лекарства -->
+    <div class="sec">
+      <div class="sec-title">Витамины и лекарства</div>
+      <div class="list">
+        <div id="medsList" class="meds-list"></div>
+        <div class="add-row">
+          <svg class="ic add-ico"><use href="#i-plus"/></svg>
+          <input class="add-input" id="newMedName" type="text" maxlength="40" placeholder="Добавить, например Магний" enterkeyhint="done">
+        </div>
       </div>
-      <label class="field grow top-gap">
-        <span>активность, минут в день</span>
-        <input type="number" id="goalsActivity" min="10" max="300" step="5">
-      </label>
-    </article>
+    </div>
 
-    <article class="card">
-      <div class="card-head"><h2><span class="ico accent"><svg class="ic"><use href="#i-bell"/></svg></span> Напоминания</h2></div>
-      <label class="switch-row">
-        <span>Напоминать про воду, пока приложение открыто</span>
-        <input type="checkbox" id="setRemOn">
-      </label>
-      <label class="field grow top-gap">
-        <span>каждые, минут</span>
-        <input type="number" id="setRemEvery" min="15" max="180" step="5">
-      </label>
-      <label class="switch-row top-gap">
-        <span>Мягкий режим — без процентов и давления</span>
-        <input type="checkbox" id="setSoft">
-      </label>
-      <p class="hint">Фоновые уведомления появятся, когда приложение будет открываться по ссылке, а не из файла.</p>
-    </article>
+    <!-- пара -->
+    <div class="sec" id="roomCard">
+      <div class="sec-title">Пара</div>
+      <div class="list">
+        <div class="pair-mini hidden" id="roomOn">
+          <div class="pair-mini-head">
+            <span class="avatar xs" id="roomAvatar">П</span>
+            <span class="pair-mini-text">
+              <b id="roomName">Партнёр</b>
+              <small id="roomHint">ссылка отправлена</small>
+            </span>
+            <span class="pill-live" id="roomState">вдвоём</span>
+          </div>
+          <div class="invite-box">
+            <div class="invite-label">Ссылка-приглашение</div>
+            <div class="invite-link" id="inviteLink">—</div>
+          </div>
+          <div class="row-inline top-gap">
+            <button class="btn primary grow" data-action="invite-share" type="button"><svg class="ic"><use href="#i-share"/></svg>Поделиться</button>
+            <button class="btn icon-only" data-action="copy-invite" type="button" aria-label="Скопировать ссылку"><svg class="ic"><use href="#i-copy"/></svg></button>
+          </div>
+        </div>
 
-    <article class="card">
-      <div class="card-head"><h2><span class="ico pill"><svg class="ic"><use href="#i-pill"/></svg></span> Мой список</h2></div>
-      <div id="medsList" class="meds-list"></div>
-      <div class="row-inline top-gap">
-        <input class="note-input one-line" id="newMedName" type="text" maxlength="40" placeholder="Название, например Магний">
-        <button class="btn" data-action="add-med" type="button" aria-label="Добавить"><svg class="ic"><use href="#i-plus"/></svg></button>
+        <div class="pair-empty-row" id="roomOff">
+          <div class="pair-empty-text">
+            <b>Пригласите партнёра</b>
+            <small>Одна ссылка — и вы вместе. Ничего вводить не нужно.</small>
+          </div>
+          <button class="btn primary" data-action="invite" type="button"><svg class="ic"><use href="#i-share"/></svg>Пригласить</button>
+        </div>
+
+        <button class="link danger quiet hidden" data-action="room-leave" type="button" id="roomLeave">Отключить пару</button>
       </div>
-    </article>
+    </div>
 
-    <article class="card" id="roomCard">
-      <div class="card-head">
-        <h2><span class="ico accent"><svg class="ic"><use href="#i-users"/></svg></span> Пара</h2>
-        <span class="card-meta" id="roomState">не подключена</span>
-      </div>
-
-      <div id="roomOff">
-        <p class="hint">Одна ссылка — и вы вместе. Партнёру не нужно ничего вводить.</p>
-        <button class="btn primary wide top-gap" data-action="invite" type="button">
-          <svg class="ic"><use href="#i-share"/></svg> Пригласить партнёра
+    <!-- данные -->
+    <div class="sec">
+      <div class="sec-title">Данные</div>
+      <div class="list">
+        <button class="row as-btn" data-action="export" type="button">
+          <span class="row-ico" style="--c:var(--ink-2)"><svg class="ic"><use href="#i-download"/></svg></span>
+          <span class="row-text"><b>Сохранить копию</b><small>файл со всеми записями</small></span>
+          <span class="row-chev"><svg class="ic"><use href="#i-chevron"/></svg></span>
         </button>
+        <button class="row as-btn" data-action="import" type="button">
+          <span class="row-ico" style="--c:var(--ink-2)"><svg class="ic"><use href="#i-upload"/></svg></span>
+          <span class="row-text"><b>Загрузить копию</b><small>вернуть записи из файла</small></span>
+          <span class="row-chev"><svg class="ic"><use href="#i-chevron"/></svg></span>
+        </button>
+        <button class="row as-btn" data-action="wipe" type="button">
+          <span class="row-ico" style="--c:var(--rose)"><svg class="ic"><use href="#i-trash"/></svg></span>
+          <span class="row-text"><b class="danger-text">Стереть всё</b><small>записи, цели и пару</small></span>
+          <span class="row-chev"><svg class="ic"><use href="#i-chevron"/></svg></span>
+        </button>
+        <p class="list-foot" id="storageInfo"></p>
+        <input type="file" id="importFile" accept=".json,application/json" class="hidden">
       </div>
+    </div>
 
-      <div id="roomOn" class="hidden">
-        <div class="invite-box">
-          <div class="invite-label">Ссылка-приглашение</div>
-          <div class="invite-link" id="inviteLink">—</div>
-        </div>
-        <div class="row-inline top-gap">
-          <button class="btn primary grow" data-action="invite-share" type="button"><svg class="ic"><use href="#i-share"/></svg> Поделиться</button>
-          <button class="btn" data-action="copy-invite" type="button" aria-label="Скопировать"><svg class="ic"><use href="#i-copy"/></svg></button>
-        </div>
-        <p class="hint" id="roomHint"></p>
-      </div>
-
-      <button class="link subtle top-gap" data-action="room-manual" type="button">Ввести код вручную</button>
-      <div id="roomManual" class="hidden top-gap">
-        <div class="code-box">
-          <input type="text" id="setRoom" maxlength="12" placeholder="КОД" autocapitalize="characters" spellcheck="false">
-          <button class="btn" data-action="room-join" type="button">Войти</button>
-        </div>
-      </div>
-
-      <button class="link danger top-gap" data-action="room-leave" type="button" id="roomLeave">Отключить пару</button>
-    </article>
-
-    <article class="card">
-      <div class="card-head"><h2><span class="ico accent"><svg class="ic"><use href="#i-cloud"/></svg></span> Синхронизация</h2></div>
-      <p class="hint">Нужна, чтобы видеть данные друг друга. Обычно ничего менять не нужно.</p>
-      <label class="field grow top-gap">
-        <span>databaseURL</span>
-        <input type="url" id="setDb" placeholder="https://xxx-default-rtdb.firebaseio.com" spellcheck="false" autocapitalize="off">
-      </label>
-      <label class="field grow top-gap">
-        <span>apiKey</span>
-        <input type="text" id="setKey" placeholder="AIza…" spellcheck="false" autocapitalize="off">
-      </label>
-      <div class="row-inline top-gap">
-        <button class="btn primary" data-action="db-connect" type="button">Подключить</button>
-        <button class="btn" data-action="db-test" type="button">Проверить</button>
-      </div>
-      <p class="hint" id="dbStatus">не подключено</p>
-    </article>
-
-    <article class="card">
-      <div class="card-head"><h2><span class="ico accent"><svg class="ic"><use href="#i-database"/></svg></span> Данные</h2></div>
-      <div class="row-inline">
-        <button class="btn" data-action="export" type="button"><svg class="ic"><use href="#i-download"/></svg> Экспорт</button>
-        <button class="btn" data-action="import" type="button"><svg class="ic"><use href="#i-upload"/></svg> Импорт</button>
-        <button class="btn danger" data-action="wipe" type="button"><svg class="ic"><use href="#i-trash"/></svg> Стереть</button>
-      </div>
-      <p class="hint" id="storageInfo"></p>
-    </article>
-
-    <p class="footnote">«Вместе» · версия 1.1</p>
+    <p class="footnote">«Вместе» · версия 3.0</p>
   </section>
 
 </main>
 
-<!-- ─────────────── нижние вкладки ─────────────── -->
+<!-- ─────────────────────────── нижние вкладки ─────────────────────────── -->
 <nav id="tabs">
   <button class="tab active" data-action="tab" data-tab="today" type="button">
     <span class="tab-ico"><svg class="ic"><use href="#i-water"/></svg></span><span class="tab-cap">Сегодня</span>
@@ -503,9 +566,9 @@
   </button>
 </nav>
 
-<!-- ─────────────── шторка ─────────────── -->
+<!-- ─────────────────────────── шторка ─────────────────────────── -->
 <div id="sheetBack" class="sheet-back hidden">
-  <div id="sheet" class="sheet" role="dialog" aria-modal="true">
+  <div id="sheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
     <div class="sheet-grip"></div>
     <div class="sheet-head">
       <h2 id="sheetTitle">Заголовок</h2>

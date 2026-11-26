@@ -328,7 +328,7 @@
       if (this.status === 'live') return 'в сети';
       if (this.status === 'connecting') return 'соединяю…';
       if (this.status === 'error') return 'нет связи';
-      return Store.state.room.code ? 'локально' : 'локально';
+      return 'на телефоне';
     },
 
     start: function () {

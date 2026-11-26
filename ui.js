@@ -19,9 +19,9 @@
     { ico: 'i-face-love', label: 'отлично' }
   ];
   var CIRC = 326.73;
+  var ACCENT = '#D9C3A0';
   var currentTab = 'today';
   var toastTimer = null;
-  var settingsFilled = false;
 
   var UI = (App.UI = {
     tab: 'today',
@@ -49,6 +49,7 @@
         waterMl: U.$('#waterMl'),
         waterGoal: U.$('#waterGoal'),
         waterPct: U.$('#waterPct'),
+        waterLeft: U.$('#waterLeft'),
         waterLog: U.$('#waterLog'),
         mealsBox: U.$('#mealsBox'),
         mealsMeta: U.$('#mealsMeta'),
@@ -78,7 +79,6 @@
         partnerSeen: U.$('#partnerSeen'),
         partnerGrid: U.$('#partnerGrid'),
         incomingBox: U.$('#incomingBox'),
-        incoming: U.$('#incomingBox'),
         sendQuick: U.$('#sendQuick'),
         pairStats: U.$('#pairStats'),
         pairFoot: U.$('#pairFoot'),
@@ -87,6 +87,7 @@
         histMonth: U.$('#histMonth'),
         waterChart: U.$('#waterChart'),
         noseChart: U.$('#noseChart'),
+        statsGrid: U.$('#statsGrid'),
         noseHint: U.$('#noseHint'),
         sheetBack: U.$('#sheetBack'),
         sheetTitle: U.$('#sheetTitle'),
@@ -96,13 +97,18 @@
         roomState: U.$('#roomState'),
         roomOn: U.$('#roomOn'),
         roomOff: U.$('#roomOff'),
-        roomManual: U.$('#roomManual'),
         roomLeave: U.$('#roomLeave'),
         roomHint: U.$('#roomHint'),
+        roomAvatar: U.$('#roomAvatar'),
+        roomName: U.$('#roomName'),
         inviteLink: U.$('#inviteLink'),
         myAvatar: U.$('#myAvatar'),
-        dbStatus: U.$('#dbStatus'),
-        storageInfo: U.$('#storageInfo')
+        storageInfo: U.$('#storageInfo'),
+        welcome: U.$('#welcome'),
+        todayPair: U.$('#todayPair'),
+        todayPairAvatar: U.$('#todayPairAvatar'),
+        todayPairName: U.$('#todayPairName'),
+        todayPairMeta: U.$('#todayPairMeta')
       };
     },
 
@@ -134,6 +140,19 @@
         fnote.addEventListener('input', U.debounce(function () {
           Store.setFeelingNote(fnote.value, dateOfScreen());
         }, 400));
+      }
+
+      var addMed = U.$('#newMedName');
+      if (addMed) {
+        addMed.addEventListener('keydown', function (ev) {
+          if (ev.key === 'Enter') {
+            ev.preventDefault();
+            self.addMed();
+          }
+        });
+        addMed.addEventListener('blur', function () {
+          if (addMed.value.trim()) self.addMed();
+        });
       }
 
       var imp = U.$('#importFile');
@@ -293,9 +312,13 @@
       var shown = Math.min(pct, 100);
       n.waterRing.style.strokeDashoffset = String(CIRC * (1 - shown / 100));
       n.waterRing.classList.toggle('full', pct >= 100);
-      n.waterMl.innerHTML = total + ' <small>мл</small>';
-      n.waterGoal.textContent = 'из ' + U.ml(st.goalWater) + ' · стакан ' + st.glass + ' мл';
+      n.waterMl.innerHTML = total + '<small>мл</small>';
+      n.waterGoal.textContent = 'из ' + U.ml(st.goalWater);
       n.waterPct.textContent = st.soft ? (pct >= 100 ? 'достаточно' : 'пей понемногу') : pct + '%';
+      if (n.waterLeft) {
+        var left = Math.max(0, (st.goalWater || 2000) - total);
+        n.waterLeft.textContent = left > 0 ? 'осталось ' + U.ml(left) : 'норма дня закрыта';
+      }
 
       var log = (doc.water || []).slice(-8);
       n.waterLog.innerHTML = log.length
@@ -387,6 +410,22 @@
       var streak = Store.streak();
       n.streakNum.textContent = streak;
       n.streakCap.textContent = streak === 0 ? 'начнём сегодня?' : streak === 1 ? 'день подряд' : 'дней подряд';
+
+      /* маленькая строка про партнёра */
+      if (n.todayPair) {
+        var hasPair = Store.hasPartner();
+        n.todayPair.classList.toggle('hidden', !hasPair);
+        if (hasPair) {
+          var pp = Store.partner();
+          var plive = Store.state.partnerLive || {};
+          paintAvatar(n.todayPairAvatar, pp.name, pp.color);
+          n.todayPairName.textContent = pp.name || 'Партнёр';
+          var pdoc = Store.doc(date, 'partner');
+          var meta = U.ml(Store.waterTotal(pdoc)) + ' воды';
+          if (plive.ts) meta += ' · ' + (Date.now() - plive.ts < 150000 ? 'сейчас рядом' : U.timeAgo(plive.ts));
+          n.todayPairMeta.textContent = meta;
+        }
+      }
 
       this.renderInbox();
     },
@@ -577,35 +616,44 @@
         cell('вода в среднем', U.ml(avgWater)) +
         cell('средний балл', Math.round(avgScore) + '<small>%</small>');
 
-      /* календарь */
-      n.histMonth.textContent = U.MONTH(U.todayKey());
+      /* календарь — текущий месяц */
+      var todayKey = U.todayKey();
+      var todayDate = U.parseKey(todayKey);
+      n.histMonth.textContent = U.MONTH(todayKey);
 
-      var calMap = {};
-      Store.history(35).forEach(function (x) { calMap[x.key] = x; });
+      var year = todayDate.getFullYear();
+      var month = todayDate.getMonth();
+      var daysInMonth = new Date(year, month + 1, 0).getDate();
+      var lead = (new Date(year, month, 1).getDay() + 6) % 7; /* пн = 0 */
 
-      var start = U.addDays(U.todayKey(), -34);
-      var startDow = (U.parseKey(start).getDay() + 6) % 7; /* пн = 0 */
       var html = U.DOW.slice(1).concat(U.DOW.slice(0, 1)).map(function (d) {
         return '<div class="cal-dow">' + d + '</div>';
       }).join('');
 
-      for (var b = 0; b < startDow; b++) html += '<div class="cal-day blank"></div>';
+      for (var b = 0; b < lead; b++) html += '<div class="cal-day blank"></div>';
 
-      for (var i = 0; i < 35; i++) {
-        var key = U.addDays(start, i);
-        var d = calMap[key];
-        var lvl = !d || !d.touched ? 'l0' : d.score >= 80 ? 'l3' : d.score >= 45 ? 'l2' : 'l1';
-        if (!d) {
-          html += '<div class="cal-day l0 future"><span>' + U.pad2(U.parseKey(key).getDate()) + '</span></div>';
+      for (var day = 1; day <= daysInMonth; day++) {
+        var key = U.dateKey(new Date(year, month, day));
+        if (key > todayKey) {
+          html += '<div class="cal-day future"><span>' + U.pad2(day) + '</span></div>';
           continue;
         }
+        var box = Store.dayBox(key, false);
+        var d = box && box.mine ? box.mine : null;
+        var touched = d ? Store.isTouched(d) : false;
+        var sc = touched ? Store.score(d) : 0;
+        var lvl = !touched ? 'l0' : sc >= 80 ? 'l3' : sc >= 45 ? 'l2' : 'l1';
+        var nose = d && d.feeling ? d.feeling.nose || 0 : 0;
         html +=
-          '<button class="cal-day ' + lvl + (key === U.todayKey() ? ' today' : '') +
+          '<button class="cal-day ' + lvl + (key === todayKey ? ' today' : '') +
           '" data-action="day-open" data-date="' + key + '" type="button">' +
-          '<span>' + U.pad2(U.parseKey(key).getDate()) + '</span>' +
-          (d.nose ? '<span class="nose"></span>' : '') +
+          '<span>' + U.pad2(day) + '</span>' +
+          (nose ? '<span class="nose"></span>' : '') +
           '</button>';
       }
+
+      var rest = (7 - ((lead + daysInMonth) % 7)) % 7;
+      for (var z = 0; z < rest; z++) html += '<div class="cal-day blank"></div>';
       n.histGrid.innerHTML = html;
 
       /* график воды */
@@ -624,20 +672,41 @@
         ? 'За 30 дней: ' + noseTotal + ' раз(а). Больше воды и мягче режим — и станет легче. Это не приговор, это повод беречься.'
         : 'За 30 дней ни одного случая. Отличный знак.';
 
+      this.renderStats(hist);
       this.renderStorageInfo();
+    },
+
+    renderStats: function (hist) {
+      var n = this.n;
+      if (!n.statsGrid) return;
+      var s = computeStats(hist);
+      var cells = [
+        ['Вода за 30 дней', U.ml(s.totalWater)],
+        ['В среднем воды', U.ml(s.avgWater)],
+        ['Сон в среднем', s.avgSleep ? U.hours(s.avgSleep) : '—'],
+        ['Ночей со сном', s.sleepDays + '<small> из ' + (s.touched || 0) + '</small>'],
+        ['Еда в день', s.touched ? (Math.round(s.totalMeals / s.touched * 10) / 10) + '<small> пр.п.</small>' : '—'],
+        ['Движение в день', s.touched ? U.hm(Math.round(s.totalAct / s.touched)) : '—'],
+        ['Серия рекорд', s.bestStreak + '<small> дн.</small>'],
+        ['Настроение', s.avgMood ? MOODS[Math.round(s.avgMood) - 1].label : '—'],
+        ['Кровь из носа', s.totalNose + '<small> раз</small>'],
+        ['Дней с записями', s.touched + '<small> из 30</small>']
+      ];
+      n.statsGrid.innerHTML = cells
+        .map(function (c) {
+          return '<div class="stat"><div class="stat-cap">' + c[0] + '</div><div class="stat-val">' + c[1] + '</div></div>';
+        })
+        .join('');
     },
 
     renderStorageInfo: function () {
       var n = this.n;
       if (!n.storageInfo) return;
-      var size = 0;
-      try {
-        size = (localStorage.getItem('vmeste.v1') || '').length;
-      } catch (e) { size = 0; }
-      n.storageInfo.textContent =
-        'Дней сохранено: ' + Object.keys(Store.state.days).length +
-        ' · в очереди на отправку: ' + Store.pendingCount() +
-        ' · размер: ' + (size / 1024).toFixed(1) + ' КБ';
+      var days = Object.keys(Store.state.days || {}).length;
+      var pending = Store.pendingCount();
+      var txt = days ? 'Записей: ' + days + ' ' + plural(days, 'день', 'дня', 'дней') : 'Записей пока нет';
+      if (pending) txt += ' · ждут отправки: ' + pending;
+      n.storageInfo.textContent = txt;
     },
 
     /* ══════════════════════════ НАСТРОЙКИ ══════════════════════════ */
@@ -648,9 +717,10 @@
       var st = Store.state.settings;
 
       setVal('#setName', me.name === 'Я' ? '' : me.name);
-      setVal('#setColor', me.color || '#7CE0B8');
+      setVal('#setColor', me.color || ACCENT);
       setVal('#setWeight', st.weight || '');
       paintAvatar(n.myAvatar, me.name, me.color);
+      this.paintSwatches(me.color || ACCENT);
 
       setVal('#goalsWater', st.goalWater);
       setVal('#goalsGlass', st.glass);
@@ -665,18 +735,7 @@
       var soft = U.$('#setSoft');
       if (soft) soft.checked = !!st.soft;
 
-      setVal('#setDb', Store.state.firebase.dbUrl || '');
-      setVal('#setKey', Store.state.firebase.apiKey || '');
-      setVal('#setRoom', Store.state.room.code || '');
-
       this.renderRoom();
-
-      if (n.dbStatus) {
-        if (!App.Net.configured()) n.dbStatus.textContent = 'не подключено';
-        else if (Sync.status === 'live') n.dbStatus.textContent = 'подключено, обмен идёт';
-        else if (Sync.status === 'error') n.dbStatus.textContent = 'ошибка: ' + (Sync.error || 'сеть');
-        else n.dbStatus.textContent = 'настроено, соединение…';
-      }
 
       if (n.medsList) {
         n.medsList.innerHTML = Store.state.meds.length
@@ -690,11 +749,17 @@
                 );
               })
               .join('')
-          : '<p class="hint">Пока пусто.</p>';
+          : '<p class="hint" style="padding:2px 0 6px">Пока пусто. Добавьте витамин или лекарство ниже.</p>';
       }
 
-      settingsFilled = true;
       this.renderStorageInfo();
+    },
+
+    paintSwatches: function (color) {
+      var c = String(color || '').toLowerCase();
+      U.$$('.swatch').forEach(function (b) {
+        b.classList.toggle('on', String(b.getAttribute('data-color') || '').toLowerCase() === c);
+      });
     },
 
     /* ── пара / комната ── */
@@ -716,18 +781,17 @@
       n.roomOff.classList.toggle('hidden', joined);
       if (n.roomLeave) n.roomLeave.classList.toggle('hidden', !joined);
 
-      if (n.roomState) {
-        n.roomState.textContent = joined ? (p.id ? 'вдвоём' : 'ждём партнёра') : 'не подключена';
-      }
-
-      if (joined && n.inviteLink) {
-        n.inviteLink.textContent = this.inviteUrl();
-      }
-
-      if (joined && n.roomHint) {
-        n.roomHint.textContent = p.id
-          ? 'Партнёр на связи. Данные обновляются сами.'
-          : 'Отправьте ссылку партнёру — он откроет её, и пара появится автоматически.';
+      if (joined) {
+        paintAvatar(n.roomAvatar, p.name, p.color);
+        if (n.roomName) n.roomName.textContent = p.name || 'Ждём партнёра';
+        if (n.roomHint) {
+          n.roomHint.textContent = p.id ? 'данные обновляются сами' : 'отправьте ссылку — пара появится сама';
+        }
+        if (n.roomState) {
+          n.roomState.textContent = p.id ? 'вдвоём' : 'ждём';
+          n.roomState.classList.toggle('wait', !p.id);
+        }
+        if (n.inviteLink) n.inviteLink.textContent = this.inviteUrl();
       }
     },
 
@@ -743,6 +807,31 @@
         case 'tab':
           this.go(g('data-tab'));
           break;
+
+        case 'set-color': {
+          var colorEl = U.$('#setColor');
+          if (colorEl) {
+            colorEl.value = g('data-color') || ACCENT;
+            this.onChange(colorEl);
+          }
+          break;
+        }
+
+        case 'goal-step': {
+          var goalEl = U.$('#' + g('data-goal'));
+          if (goalEl) {
+            var step = Number(g('data-delta')) || 0;
+            var next = (Number(goalEl.value) || 0) + step;
+            var min = parseFloat(goalEl.min);
+            var max = parseFloat(goalEl.max);
+            if (!isNaN(min)) next = Math.max(min, next);
+            if (!isNaN(max)) next = Math.min(max, next);
+            goalEl.value = String(next);
+            this.onChange(goalEl);
+            vibrate(6);
+          }
+          break;
+        }
 
         case 'sync-info':
           this.showSyncSheet();
@@ -830,24 +919,12 @@
           this.createRoom();
           break;
 
-        case 'room-join':
-          this.joinRoom();
-          break;
-
         case 'room-leave':
           this.leaveRoom();
           break;
 
         case 'copy-room':
           this.copyRoom();
-          break;
-
-        case 'db-connect':
-          this.connectDb();
-          break;
-
-        case 'db-test':
-          this.testDb();
           break;
 
         case 'add-med':
@@ -876,10 +953,6 @@
           this.copyInvite();
           break;
 
-        case 'room-manual':
-          if (this.n.roomManual) this.n.roomManual.classList.toggle('hidden');
-          break;
-
         case 'send-heart':
           if (!Store.hasPartner()) return this.toast('Сначала пригласите партнёра');
           Sync.sendHeart();
@@ -903,11 +976,6 @@
 
         case 'welcome-save':
           this.saveWelcome();
-          break;
-
-        case 'welcome-room':
-          this.saveWelcome();
-          this.invite();
           break;
 
         default:
@@ -939,6 +1007,7 @@
         case 'setColor':
           Store.setMe({ color: el.value });
           paintAvatar(this.n.myAvatar, Store.me().name, el.value);
+          this.paintSwatches(el.value);
           Sync.pushMember();
           Sync.pushLive();
           break;
@@ -989,19 +1058,6 @@
           Store.save();
           this.renderToday();
           this.toast(el.checked ? 'Мягкий режим включён' : 'Мягкий режим выключен');
-          break;
-
-        case 'setDb':
-          Store.state.firebase.dbUrl = el.value.trim();
-          Store.save();
-          break;
-        case 'setKey':
-          Store.state.firebase.apiKey = el.value.trim();
-          Store.save();
-          break;
-        case 'setRoom':
-          Store.state.room.code = el.value.trim().toUpperCase();
-          Store.save();
           break;
 
         default:
@@ -1072,30 +1128,21 @@
     },
 
     invite: function () {
-      var self = this;
-      var code = this.ensureRoom();
+      this.ensureRoom();
       var url = this.inviteUrl();
       this.lastInvite = url;
 
       this.sheet(
         'Пригласить партнёра',
-        '<p>Отправьте ссылку — партнёру достаточно открыть её. Код вводить не нужно.</p>' +
+        '<p>Отправьте одну ссылку. Партнёру достаточно открыть её — пара появится сама, вводить ничего не нужно.</p>' +
         '<div class="invite-box top-gap"><div class="invite-label">Ссылка-приглашение</div>' +
         '<div class="invite-link">' + U.esc(url) + '</div></div>' +
         '<div class="row-inline top-gap">' +
-        '<button class="btn primary grow" data-action="invite-share" type="button">' + icon('i-share') + ' Поделиться</button>' +
-        '<button class="btn" data-action="copy-invite" type="button">' + icon('i-copy') + '</button>' +
+        '<button class="btn primary grow" data-action="invite-share" type="button">' + icon('i-share') + 'Поделиться</button>' +
+        '<button class="btn icon-only" data-action="copy-invite" type="button" aria-label="Скопировать">' + icon('i-copy') + '</button>' +
         '</div>' +
-        '<p class="hint">Код пары: <b>' + U.esc(code) + '</b>. Он понадобится, только если ссылку открыть не получится.</p>'
+        '<p class="hint">Ссылка постоянная: отправьте её в любой мессенджер.</p>'
       );
-
-      if (navigator.share) {
-        navigator.share({
-          title: 'Вместе',
-          text: 'Давай вести дни вместе — вода, еда, сон и самочувствие.',
-          url: url
-        }).catch(function () {});
-      }
     },
 
     shareInvite: function () {
@@ -1137,7 +1184,7 @@
       Store.state.room.joinedAt = Date.now();
       Store.state.room.host = false;
       Store.state.partnerLive = null;
-      Store.setPartner({ id: '', name: '', emoji: '', color: '#7CE0B8' });
+      Store.setPartner({ id: '', name: '', emoji: '', color: '#D9C3A0' });
       Store.save();
       this.renderAll();
       Sync.start();
@@ -1145,14 +1192,11 @@
       return true;
     },
 
-    joinRoom: function () {
-      return this.joinByCode(U.$('#setRoom').value, false);
-    },
 
     leaveRoom: function () {
       Store.state.room.code = '';
       Store.state.partnerLive = null;
-      Store.setPartner({ id: '', name: '', emoji: '', color: '#7CE0B8' });
+      Store.setPartner({ id: '', name: '', emoji: '', color: '#D9C3A0' });
       Store.save();
       Sync.stop();
       this.renderAll();
@@ -1163,38 +1207,6 @@
       this.copyInvite();
     },
 
-    connectDb: function () {
-      var db = String(U.$('#setDb').value || '').trim();
-      var key = String(U.$('#setKey').value || '').trim();
-      Store.state.firebase.dbUrl = db;
-      Store.state.firebase.apiKey = key;
-      Store.state.firebase.idToken = '';
-      Store.state.firebase.refreshToken = '';
-      Store.state.firebase.tokenExp = 0;
-      Store.save(true);
-      this.toast('Сохраняю…');
-      Sync.start();
-      this.renderSettings();
-    },
-
-    testDb: function () {
-      var self = this;
-      if (!App.Net.configured()) return this.toast('Сначала введите databaseURL');
-      this.toast('Проверяю…');
-      App.Net.ensureToken()
-        .then(function () {
-          var room = App.Net.room() || 'TEST';
-          return App.Net.get('/rooms/' + room + '/meta');
-        })
-        .then(function () {
-          self.toast('Связь есть ✓');
-          self.renderSettings();
-        })
-        .catch(function (err) {
-          self.toast('Ошибка: ' + (err.message || 'сеть'));
-          self.renderSettings();
-        });
-    },
 
     addMed: function () {
       var input = U.$('#newMedName');
@@ -1216,14 +1228,17 @@
     },
 
     saveWelcome: function () {
-      var name = String(U.$('#welcomeName').value || '').trim();
+      var input = U.$('#welcomeName');
+      var name = String(input && input.value || '').trim().slice(0, 24);
       Store.setMe({ name: name || 'Я', emoji: '' });
       try {
         localStorage.setItem('vmeste.onboarded', '1');
       } catch (e) { /* ignore */ }
+      this.closeWelcome();
       this.closeSheet();
       this.renderAll();
       Sync.pushMember();
+      if (!name) this.toast('Имя можно добавить в настройках');
     },
 
     /* ── шторки ── */
@@ -1296,37 +1311,37 @@
     },
 
     showSyncSheet: function () {
-      var lines = [];
-      lines.push(['Пара', Store.state.room.code ? (Store.hasPartner() ? 'на связи' : 'ждём партнёра') : 'не подключена']);
-      lines.push(['Партнёр', Store.hasPartner() ? Store.partner().name : 'не найден']);
-      lines.push(['Состояние', Sync.label()]);
-      lines.push(['В очереди', String(Store.pendingCount())]);
-      if (Sync.error) lines.push(['Ошибка', Sync.error]);
-
+      var has = !!Store.state.room.code;
+      var state = has ? (Store.hasPartner() ? 'вдвоём' : 'ждём партнёра') : 'пока одна';
       this.sheet(
-        'Синхронизация',
-        lines
-          .map(function (l) {
-            return '<div class="kv"><span>' + l[0] + '</span><b>' + U.esc(l[1]) + '</b></div>';
-          })
-          .join('') +
-          '<p class="top-gap">Если здесь «нет», данные живут только на этом телефоне. Настройка комнаты и Firebase — во вкладке «Настройки».</p>' +
-          '<button class="btn primary top-gap" data-action="pair-refresh" type="button">Переподключиться</button>'
+        'Сохранение',
+        '<div class="kv"><span>Пара</span><b>' + state + '</b></div>' +
+        '<div class="kv"><span>Связь</span><b>' + U.esc(Sync.label()) + '</b></div>' +
+        '<p class="top-gap">' +
+        (has
+          ? 'Записи сохраняются на телефоне и передаются партнёру, когда есть интернет. Ничего настраивать не нужно.'
+          : 'Пока записи живут только на этом телефоне. Пригласите партнёра — и вы увидите друг друга.') +
+        '</p>' +
+        '<button class="btn top-gap" data-action="' + (has ? 'pair-refresh' : 'invite') + '" type="button">' +
+        (has ? 'Обновить сейчас' : 'Пригласить партнёра') + '</button>'
       );
     },
 
     welcome: function () {
-      this.sheet(
-        'Привет',
-        '<p>«Вместе» — тихий трекер заботы. Вода, еда, сон, движение и самочувствие. Для двоих, по-настоящему вместе.</p>' +
-        '<label class="field top-gap"><span>как тебя звать</span>' +
-        '<input type="text" id="welcomeName" maxlength="24" placeholder="Имя или прозвище"></label>' +
-        '<div class="row-inline top-gap">' +
-        '<button class="btn primary grow" data-action="welcome-save" type="button">Начать</button>' +
-        '<button class="btn" data-action="welcome-room" type="button">Пригласить</button>' +
-        '</div>' +
-        '<p class="hint">Всё хранится на телефоне. Пара появится, когда партнёр откроет вашу ссылку-приглашение.</p>'
-      );
+      var w = this.n.welcome;
+      if (!w) return;
+      w.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+
+      /* подставляем имя, если оно уже есть */
+      var input = U.$('#welcomeName');
+      if (input && Store.me().name && Store.me().name !== 'Я') input.value = Store.me().name;
+    },
+
+    closeWelcome: function () {
+      var w = this.n.welcome;
+      if (w) w.classList.add('hidden');
+      document.body.style.overflow = '';
     },
 
     namePrompt: function () {
@@ -1396,7 +1411,7 @@
     if (!el) return;
     var txt = initials(name);
     if (el.textContent !== txt) el.textContent = txt;
-    var c = /^#[0-9a-f]{6}$/i.test(String(color || '')) ? color : '#7CE0B8';
+    var c = /^#[0-9a-f]{6}$/i.test(String(color || '')) ? color : '#D9C3A0';
     el.style.background = 'linear-gradient(160deg, ' + mix(c, 0.38) + ', ' + c + ')';
     el.style.color = inkOn(c);
   }
@@ -1417,6 +1432,15 @@
     return '<div class="sum-cell"><div class="sum-cap">' + cap + '</div><div class="sum-val">' + val + '</div></div>';
   }
 
+  function plural(n, one, few, many) {
+    var a = Math.abs(n) % 100;
+    var b = a % 10;
+    if (a > 10 && a < 20) return many;
+    if (b > 1 && b < 5) return few;
+    if (b === 1) return one;
+    return many;
+  }
+
   function avg(arr) {
     if (!arr.length) return 0;
     var s = 0;
@@ -1424,6 +1448,42 @@
       s += Number(v) || 0;
     });
     return s / arr.length;
+  }
+
+  /* подробная статистика за N дней */
+  function computeStats(hist) {
+    var s = {
+      totalWater: 0, avgWater: 0, totalNose: 0, totalMeals: 0, totalAct: 0,
+      sleepSum: 0, sleepDays: 0, avgSleep: 0, moodSum: 0, moodDays: 0, avgMood: 0,
+      touched: 0, bestStreak: 0
+    };
+
+    var run = 0;
+    hist.forEach(function (d) {
+      if (!d.touched) { run = 0; return; }
+      s.touched++;
+      run++;
+      if (run > s.bestStreak) s.bestStreak = run;
+
+      var doc = Store.mine(d.key);
+      s.totalWater += d.water || 0;
+      s.totalNose += d.nose || 0;
+      s.totalMeals += Store.mealsCount(doc);
+      s.totalAct += Store.activityTotal(doc);
+
+      var h = Store.sleepHours(doc);
+      if (h > 0) { s.sleepSum += h; s.sleepDays++; }
+
+      var m = (doc.feeling && doc.feeling.mood) || 0;
+      if (m > 0) { s.moodSum += m; s.moodDays++; }
+    });
+
+    s.avgWater = s.touched ? Math.round(s.totalWater / s.touched) : 0;
+    s.avgSleep = s.sleepDays ? s.sleepSum / s.sleepDays : 0;
+    s.avgMood = s.moodDays ? s.moodSum / s.moodDays : 0;
+
+    /* текущая серия дней подряд */
+    return s;
   }
 
   function vibrate(ms) {

@@ -4,13 +4,13 @@
   "description": "Вода, еда, сон, движение и самочувствие — для двоих.",
   "lang": "ru",
   "dir": "ltr",
-  "start_url": "./index.html",
+  "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "display_override": ["standalone", "minimal-ui"],
   "orientation": "portrait",
-  "background_color": "#0A0D12",
-  "theme_color": "#0A0D12",
+  "background_color": "#F3F1EC",
+  "theme_color": "#F3F1EC",
   "categories": ["health", "lifestyle", "productivity"],
   "icons": [
     {
