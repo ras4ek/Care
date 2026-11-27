@@ -551,7 +551,7 @@
       if (live.nudge) items.push({ ico: 'i-bell', text: live.nudge.text, ts: live.nudge.ts });
       if (live.heart) items.push({ ico: 'i-heart', text: 'сердечко', ts: live.heart });
       items.sort(function (a, b) { return b.ts - a.ts; });
-      n.incoming.innerHTML = items.length
+      n.incomingBox.innerHTML = items.length
         ? items
             .slice(0, 6)
             .map(function (it) {
